@@ -1,0 +1,120 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { AuditResultView } from "./AuditResultView";
+import type { AuditResult } from "../types/api";
+
+const baseResult: AuditResult = {
+  academicYear: "113",
+  programType: "UNDERGRADUATE",
+  department: "應用數學系",
+  mode: "OFFICIAL",
+  isProjected: false,
+  progressPercentage: 100,
+  graduationEligible: true,
+  totalCredits: {
+    earned: 128,
+    required: 128,
+    missing: 0,
+    source: "calculated",
+    officialTranscriptCredits: null,
+    calculatedFromPassedCourses: 128,
+    categoryEarnedCredits: 128,
+    excludedByRules: 3,
+    structure: {
+      required: 70,
+      physicalEducation: 0,
+      generalEducation: 28,
+      elective: 30
+    }
+  },
+  warnings: [],
+  groups: [
+    {
+      groupCode: "GENERAL",
+      groupName: "通識",
+      status: "COMPLETE",
+      earnedCredits: 28,
+      requiredCredits: 28,
+      missingCredits: 0,
+      requirements: [
+        {
+          bucketCode: "HUMANITIES",
+          bucketName: "人文學",
+          status: "COMPLETE",
+          rawCredits: 7,
+          earnedCredits: 7,
+          minCredits: 3,
+          maxCredits: 7,
+          missingCredits: 0,
+          excessCredits: 0,
+          courses: [
+            { courseCode: "H1", courseName: "哲學概論", isCore: true }
+          ]
+        },
+        {
+          bucketCode: "SOCIAL",
+          bucketName: "社會科學",
+          status: "COMPLETE",
+          rawCredits: 4,
+          earnedCredits: 4,
+          minCredits: 3,
+          maxCredits: 7,
+          missingCredits: 0,
+          excessCredits: 0,
+          courses: [
+            { courseCode: "S1", courseName: "政治學", isCore: true }
+          ]
+        }
+      ],
+      coreRequirement: {
+        status: "COMPLETE",
+        requiredDistinctDomains: 2,
+        earnedDistinctDomains: 2,
+        earnedDistinctCourses: 2,
+        earnedDomains: ["人文學", "社會科學"],
+        courses: [
+          { courseCode: "H1", courseName: "哲學概論", assignedBucket: "HUMANITIES", bucketName: "人文學" },
+          { courseCode: "S1", courseName: "政治學", assignedBucket: "SOCIAL", bucketName: "社會科學" }
+        ],
+        missingDistinctDomains: 0
+      }
+    }
+  ]
+};
+
+describe("AuditResultView", () => {
+  it("shows general education official names, credit ranges, and completed core courses", () => {
+    render(<AuditResultView result={baseResult} />);
+
+    expect(screen.getByText("人文學通識")).toBeInTheDocument();
+    expect(screen.getByText("社會科學通識")).toBeInTheDocument();
+    expect(screen.getByText("7 / 3-7 學分")).toBeInTheDocument();
+
+    expect(screen.getByText("核心通識課程")).toBeInTheDocument();
+    expect(screen.getByText("人文學：哲學概論")).toBeInTheDocument();
+    expect(screen.getByText("社會科學：政治學")).toBeInTheDocument();
+  });
+
+  it("shows imported student academic profile above warnings", () => {
+    render(
+      <AuditResultView
+        result={baseResult}
+        studentProfile={{
+          major: "金融學系",
+          doubleMajor: "統計學系",
+          minor: "應用數學系、會計學系",
+          ranking: "4 / 75",
+          rankingPercent: "5.33 %",
+          averageScore: "94.55"
+        }}
+      />
+    );
+
+    expect(screen.getByText("學生學籍資訊")).toBeInTheDocument();
+    expect(screen.getByText("金融學系")).toBeInTheDocument();
+    expect(screen.getByText("統計學系")).toBeInTheDocument();
+    expect(screen.getByText("應用數學系、會計學系")).toBeInTheDocument();
+    expect(screen.getByText("4 / 75（前 5.33 %）")).toBeInTheDocument();
+    expect(screen.getByText("94.55")).toBeInTheDocument();
+  });
+});

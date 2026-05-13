@@ -1,0 +1,390 @@
+# NCCU AMS 畢業審核系統需求文件
+
+這份檔案是專案需求與執行環境說明，不是 Python 的 `requirements.txt`。
+
+本專案是 Node.js 專案，實際套件依賴請看：
+
+```text
+backend/package.json
+backend/package-lock.json
+frontend/package.json
+frontend/package-lock.json
+```
+
+## 一、系統目的
+
+建立一個可以匯入 NCCU transcript JSON，並依照畢業規則自動判斷學生是否符合畢業條件的系統。
+
+系統需要支援：
+
+- 學生匯入成績 JSON。
+- 系統解析修課資料。
+- 後端依照畢業規則計算。
+- 前端顯示通過/未通過、缺少項目、未採計課程。
+- 管理員可以查看問題課程並做人工調整。
+
+## 二、使用者角色
+
+### 1. 學生
+
+學生可以：
+
+- 登入學生端。
+- 匯入 NCCU transcript JSON。
+- 查看自己的修課資料。
+- 執行畢業審核。
+- 查看審核結果。
+- 查看歷史審核紀錄。
+
+### 2. 管理員
+
+管理員可以：
+
+- 登入管理員端。
+- 指定要查看的學生 userId。
+- 查看待人工確認課程。
+- 新增人工認列、抵免或替代課程。
+- 查詢課程資料。
+- 查詢畢業規則。
+- 查看學生審核歷史。
+
+## 三、功能需求
+
+### 1. Transcript JSON 匯入
+
+需求：
+
+- 前端可選擇 `.json` 檔案。
+- 前端先解析 JSON 是否合法。
+- 後端接收 JSON 後，解析學生資料與修課資料。
+- 匯入結果寫入資料庫。
+
+對應 API：
+
+```text
+POST /api/transcripts/import
+```
+
+主要資料表：
+
+```text
+transcript_imports
+student_courses
+```
+
+### 2. 畢業審核
+
+需求：
+
+- 使用者可以指定學年度。
+- 系統可選擇是否包含修課中課程作為預估。
+- 系統可選擇是否儲存審核結果。
+- 審核結果要顯示：
+  - 總學分
+  - 缺少學分
+  - 完成率
+  - 必修檢查
+  - 體育檢查
+  - 通識檢查
+  - 其他選修檢查
+  - 未採計課程
+  - 系統提醒
+
+對應 API：
+
+```text
+POST /api/audit/run
+```
+
+### 3. 通識檢查
+
+需求：
+
+- 顯示正式通識名稱。
+- 顯示各領域學分需求，例如 `3-7 學分`。
+- 顯示核心通識完成狀態。
+- 核心通識要列出實際完成的課程與領域。
+
+通識類別：
+
+```text
+中國語文通識課程
+外國語文通識課程
+人文學通識
+社會科學通識
+自然科學通識
+資訊通識
+書院通識
+核心通識課程
+```
+
+### 4. 學籍資訊顯示
+
+需求：
+
+- 前端匯入 JSON 時，解析學生學籍資訊。
+- 結果頁顯示主修、雙主修、輔修、系排名、總平均。
+- 若 JSON 沒有 ranking，不顯示空值。
+
+資料來源：
+
+```text
+課業學習.aboutMe.registerMajor
+課業學習.aboutMe.registerDoubleMajor
+課業學習.aboutMe.registerMinor
+課業學習.totalAverageScore.rankingDepartment
+課業學習.totalAverageScore.departmentRankPercentage
+課業學習.totalAverageScore.averageScore
+```
+
+### 5. 管理員人工調整
+
+需求：
+
+- 管理員可以查看待確認課程。
+- 管理員可以從待確認課程一鍵帶入人工調整表單。
+- 管理員可以建立人工認列或核准替代課程。
+- 人工調整資料不能覆蓋原始 transcript 資料。
+
+對應 API：
+
+```text
+GET /api/student-courses/unresolved
+POST /api/admin/manual-courses
+DELETE /api/admin/manual-courses/:id
+```
+
+### 6. 審核歷史
+
+需求：
+
+- 學生可以看自己的歷史紀錄。
+- 管理員可以看指定學生的歷史紀錄。
+- 管理員頁面預設顯示最新審核結果。
+
+對應 API：
+
+```text
+GET /api/audit/history
+GET /api/audit/history/:id
+```
+
+## 四、非功能需求
+
+### 1. 可維護性
+
+- 前端與後端分離。
+- 前端不直接存取資料庫。
+- 後端使用 service 分層處理規則。
+- API 回傳格式要清楚。
+- 重要邏輯要有測試。
+
+### 2. 可部署性
+
+- 後端與 MySQL 可用 Docker Compose 啟動。
+- 前端可用 Vite dev server 啟動。
+- demo 可用 Cloudflare Tunnel 暫時公開。
+
+### 3. 可測試性
+
+後端需支援：
+
+```bash
+npm test
+```
+
+前端需支援：
+
+```bash
+npm test
+npm run build
+```
+
+### 4. 效能
+
+- API 應能支援一般課堂 demo 使用。
+- 壓測使用 k6。
+- 壓測腳本放在 `performance/`。
+
+## 五、執行環境需求
+
+### 必要軟體
+
+```text
+Node.js 20 或以上
+npm
+Docker Desktop
+Docker Compose
+MySQL 8 container
+```
+
+### 選用軟體
+
+```text
+cloudflared
+k6
+Git
+GitHub
+```
+
+## 六、後端套件
+
+後端主要套件：
+
+```text
+express
+sequelize
+mysql2
+cors
+dotenv
+exceljs
+```
+
+安裝方式：
+
+```bash
+cd backend
+npm install
+```
+
+## 七、前端套件
+
+前端主要套件：
+
+```text
+react
+react-dom
+react-router-dom
+@tanstack/react-query
+react-hook-form
+lucide-react
+clsx
+vite
+typescript
+tailwindcss
+vitest
+```
+
+安裝方式：
+
+```bash
+cd frontend
+npm install
+```
+
+## 八、啟動需求
+
+### 1. 啟動 MySQL 與後端
+
+```bash
+docker compose up -d --build
+```
+
+### 2. 匯入基礎資料
+
+```bash
+docker compose exec backend npm run seed
+docker compose exec backend npm run seed:transcript
+docker compose exec backend npm run seed:k6-user
+```
+
+### 3. 啟動前端
+
+```bash
+cd frontend
+npm run dev
+```
+
+### 4. 開啟網站
+
+```text
+http://localhost:5173
+```
+
+## 九、資料庫需求
+
+使用 MySQL 8。
+
+本機 Docker 設定：
+
+```text
+DB_HOST=mysql
+DB_PORT=3306
+DB_NAME=nccu_credit_checker
+DB_USER=root
+DB_PASSWORD=root
+```
+
+對外連線 port：
+
+```text
+localhost:3307 -> container:3306
+```
+
+## 十、主要資料來源
+
+```text
+data/courses.xlsx
+data/required_courses.xlsx
+data/transcript.json
+```
+
+用途：
+
+- `courses.xlsx`：課程資料、通識資料。
+- `required_courses.xlsx`：必修規則資料。
+- `transcript.json`：demo transcript。
+
+## 十一、專案限制
+
+目前版本限制：
+
+- 登入/註冊是前端展示，不是正式帳號系統。
+- 管理員角色還沒有後端權限 middleware。
+- CORS 目前全開。
+- Docker Compose 使用 demo 資料庫帳密。
+- 審核結果是依本專案規則計算，不等於學校正式畢業審查。
+
+## 十二、GitHub 上傳需求
+
+應上傳：
+
+```text
+README.md
+requirement.txt
+backend/src/
+backend/package.json
+backend/package-lock.json
+frontend/src/
+frontend/package.json
+frontend/package-lock.json
+data/
+docs/
+docker-compose.yml
+performance/
+```
+
+不應上傳：
+
+```text
+node_modules/
+dist/
+backend/.env
+.DS_Store
+*.log
+```
+
+## 十三、驗收標準
+
+專案基本驗收標準：
+
+- `docker compose up -d --build` 可以啟動 MySQL 與後端。
+- `curl http://localhost:3001/api/health` 回傳 `{"status":"ok"}`。
+- 前端 `npm run dev` 可以開啟 `http://localhost:5173`。
+- 學生可以匯入 JSON。
+- 學生可以執行畢業審核。
+- 審核結果能顯示缺少項目與未採計課程。
+- 管理員可以查看待確認課程。
+- 管理員可以新增人工調整。
+- 前端測試通過。
+- 後端測試通過。

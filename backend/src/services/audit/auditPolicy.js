@@ -1,0 +1,36 @@
+const APPLIED_MATH_DEPARTMENT = "應用數學系";
+const MAJOR_PROGRAM_TYPE = "MAJOR";
+const TOTAL_REQUIRED_CREDITS = 128;
+const REQUIRED_TOTAL_CREDITS = 51;
+const PHYSICAL_REQUIRED_CREDITS = 4;
+const PHYSICAL_REQUIRED_COURSES = 4;
+const GENERAL_TOTAL_REQUIRED_CREDITS = 28;
+const GENERAL_TOTAL_CREDIT_CAP = 28;
+const OTHER_ELECTIVE_REQUIRED_CREDITS = 45;
+const PHYSICAL_ELECTIVE_CREDIT_CAP = 4;
+const DEFENSE_ELECTIVE_CREDIT_CAP = 4;
+
+const GENERAL_BUCKETS = {
+  CHINESE: { label: "中國語文", min: 3, max: 6, section: "LANGUAGE" },
+  FOREIGN: { label: "外國語文", min: 6, max: 6, section: "LANGUAGE" },
+  HUMANITIES: { label: "人文學", min: 3, max: 7, section: "GENERAL" },
+  SOCIAL: { label: "社會科學", min: 3, max: 7, section: "GENERAL" },
+  NATURAL: { label: "自然科學", min: 3, max: 7, section: "GENERAL" },
+  INFO: { label: "資訊", min: 0, max: 3, section: "GENERAL", exemptForAppliedMath: true },
+  COLLEGE: { label: "書院通識", min: 0, max: 3, section: "GENERAL" }
+};
+
+module.exports = {
+  APPLIED_MATH_DEPARTMENT,
+  MAJOR_PROGRAM_TYPE,
+  TOTAL_REQUIRED_CREDITS,
+  REQUIRED_TOTAL_CREDITS,
+  PHYSICAL_REQUIRED_CREDITS,
+  PHYSICAL_REQUIRED_COURSES,
+  GENERAL_TOTAL_REQUIRED_CREDITS,
+  GENERAL_TOTAL_CREDIT_CAP,
+  OTHER_ELECTIVE_REQUIRED_CREDITS,
+  PHYSICAL_ELECTIVE_CREDIT_CAP,
+  DEFENSE_ELECTIVE_CREDIT_CAP,
+  GENERAL_BUCKETS
+};

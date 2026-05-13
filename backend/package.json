@@ -1,0 +1,25 @@
+{
+  "name": "nccu-ams-credit-checker-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NCCU Applied Mathematics graduation credit audit backend for academic years 111-114.",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node src/scripts/migrate.js",
+    "seed": "node src/scripts/seedFromExcel.js && node src/scripts/seedDemoUser.js",
+    "seed:k6-user": "node src/scripts/seedK6User.js",
+    "seed:transcript": "node src/scripts/importDemoTranscript.js",
+    "reset:demo": "node src/scripts/resetDemoData.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "mysql2": "^3.11.5",
+    "sequelize": "^6.37.5"
+  }
+}
