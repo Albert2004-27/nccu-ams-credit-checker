@@ -1,7 +1,7 @@
 import { FormEvent, type ReactNode, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, BookOpen, ClipboardCheck, Database, FileWarning, History, ListChecks, Route, Sparkles, UserCog } from "lucide-react";
-import { useAuditHistory, useCourses, useCreateManualCourse, useDeleteManualCourse, useRequirements, useStudentCourses, useUnresolvedCourses } from "../api/hooks";
+import { useAuditHistory, useAuditHistoryDetail, useCourses, useCreateManualCourse, useDeleteManualCourse, useRequirements, useStudentCourses, useUnresolvedCourses } from "../api/hooks";
 import { AuditResultView } from "../components/AuditResultView";
 import { MetricTile } from "../components/MetricTile";
 import { PageHeader } from "../components/PageHeader";
@@ -362,7 +362,7 @@ export function AdminRequirementsPage() {
 }
 
 export function AdminAuditHistoryPage() {
-  const { targetUserId, setLastAuditResult } = useAppState();
+  const { targetUserId } = useAppState();
   const history = useAuditHistory(targetUserId);
   const [selected, setSelected] = useState<number | null>(null);
   const latestRow = useMemo(() => (history.data?.rows || []).reduce<AuditHistoryRow | null>((current, row) => {
@@ -370,7 +370,9 @@ export function AdminAuditHistoryPage() {
     return row.id > current.id ? row : current;
   }, null), [history.data?.rows]);
   const selectedRow = history.data?.rows.find((row) => row.id === selected) || latestRow;
-  const result = selectedRow?.result_json || null;
+  const historyDetail = useAuditHistoryDetail(selectedRow?.id ?? null);
+  const result = historyDetail.data?.result_json || null;
+
   return (
     <div>
       <PageHeader title="學生審核紀錄" description="管理員可載入指定學生歷次審核結果，確認人工調整後是否改善缺漏項目。" actions={<TargetUserControl />} />
@@ -384,13 +386,10 @@ export function AdminAuditHistoryPage() {
       <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
         <div className="space-y-3">
           {history.data?.rows.map((row) => (
-            <button className={`block w-full rounded-lg border bg-white p-4 text-left hover:border-navy-200 ${selectedRow?.id === row.id ? "border-navy-300 ring-2 ring-navy-100" : "border-slate-200"}`} key={row.id} onClick={() => {
-              setSelected(row.id);
-              if (row.result_json) setLastAuditResult(row.result_json);
-            }}>
+            <button className={`block w-full rounded-lg border bg-white p-4 text-left hover:border-navy-200 ${selectedRow?.id === row.id ? "border-navy-300 ring-2 ring-navy-100" : "border-slate-200"}`} key={row.id} onClick={() => setSelected(row.id)}>
               <div className="flex items-center justify-between gap-3">
                 <p className="font-bold text-navy-900">Audit #{row.id}</p>
-                {row.result_json ? <StatusBadge value={row.result_json.graduationEligible ? "COMPLETE" : "INCOMPLETE"} /> : null}
+                {historyDetail.data?.id === row.id && result ? <StatusBadge value={result.graduationEligible ? "COMPLETE" : "INCOMPLETE"} /> : null}
               </div>
               <p className="mt-1 text-sm text-slate-500">{new Date(row.created_at).toLocaleString()}</p>
               <p className="mt-2 text-sm">採計 {formatCredits(row.total_credits_earned)} / {formatCredits(row.total_required_credits)}，完成率 {formatCredits(row.progress_percentage)}%</p>
@@ -398,7 +397,13 @@ export function AdminAuditHistoryPage() {
           ))}
           {!history.isLoading && !history.data?.rows.length ? <EmptyState title="尚無審核紀錄" /> : null}
         </div>
-        <div>{result ? <AuditResultView result={result} /> : <EmptyState title="選擇一筆審核紀錄" />}</div>
+        <div>
+          {historyDetail.isLoading ? <LoadingState label="正在載入審核明細" /> : null}
+          {historyDetail.error ? <ErrorState message={historyDetail.error.message} /> : null}
+          {!historyDetail.isLoading && !historyDetail.error ? (
+            result ? <AuditResultView result={result} /> : <EmptyState title={selectedRow ? "這筆紀錄沒有審核明細" : "選擇一筆審核紀錄"} />
+          ) : null}
+        </div>
       </div>
     </div>
   );
