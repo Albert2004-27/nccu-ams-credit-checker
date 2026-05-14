@@ -25,7 +25,7 @@ Container：Docker Compose
 專案架構：
 
 ```text
-nccu-ams-credit-checker/
+1142-nccu-database-systems/
 ├── backend/                # Express API、Sequelize models、audit engine
 ├── frontend/               # React + Vite 前端
 ├── data/                   # 課程 Excel、demo transcript JSON
@@ -36,7 +36,7 @@ nccu-ams-credit-checker/
 └── README.md
 ```
 
-## 前後端嫁接
+## 前後端串接
 
 前端不直接碰資料庫，只呼叫後端 API。
 
@@ -137,9 +137,27 @@ flowchart TD
 
 其中，核心通識會清楚列出已通過哪兩門核心領域課程。
 
+## 環境需求
+
+| 工具 | 建議版本 |
+|---|---|
+| Docker Desktop | 4.x 以上 |
+| Node.js | 18.x 以上 |
+| npm | 9.x 以上 |
+
 ## 本機啟動方式
 
-### 1. 啟動後端與 MySQL
+### 1. 建立環境變數設定檔
+
+複製範本並填入實際密碼：
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+開啟 `backend/.env`，將 `your_db_user` 與 `your_db_password` 改成你要使用的帳號密碼，並在 `docker-compose.yml` 中確認對應的環境變數一致。
+
+### 2. 啟動後端與 MySQL
 
 專案根目錄執行：
 
@@ -172,7 +190,7 @@ curl http://localhost:3001/api/health
 {"status":"ok"}
 ```
 
-### 2. 第一次啟動後匯入基礎資料
+### 3. 第一次啟動後匯入基礎資料
 
 資料庫第一次建立後，需要 seed 課程與 demo 使用者資料：
 
@@ -188,7 +206,7 @@ docker compose exec backend npm run seed:k6-user
 docker compose exec backend npm run reset:demo
 ```
 
-### 3. 啟動前端
+### 4. 啟動前端
 
 另開一個 terminal：
 
