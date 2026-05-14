@@ -1,8 +1,8 @@
 <div align="center">
 
-# NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System
+# NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System (DARS) for Academic Years 111-114
 
-### 111–114 Academic Years · 政大應數系學士班畢業審核系統
+### 111–114學年度政大應數系學士班畢業審核系統
 
 </div>
 
@@ -25,8 +25,6 @@
 
 > [!NOTE]
 > This README is kept as a single file. Use the expandable language sections below to read the English or Traditional Chinese version without navigating to another README file.
->
-> 此 README 採用單一檔案設計。請直接展開下方語言區塊閱讀英文版或繁體中文版，不需要跳轉到其他 README 檔案。
 
 ---
 
