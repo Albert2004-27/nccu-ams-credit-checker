@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NCCU Mathematical Sciences Degree Audit System</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #17202a;
+      --muted: #5f6b7a;
+      --border: #d9dee7;
+      --accent: #2563eb;
+      --accent-soft: #e8f0ff;
+      --code: #0f172a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background: var(--bg);
+    }
+    header {
+      padding: 56px 24px 32px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #f7f8fb);
+    }
+    main { max-width: 1040px; margin: 0 auto; padding: 32px 24px 80px; }
+    .hero { max-width: 1040px; margin: 0 auto; }
+    .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; font-size: 13px; }
+    h1 { margin: 12px 0 12px; font-size: clamp(32px, 5vw, 54px); line-height: 1.08; letter-spacing: -0.04em; }
+    h2 { margin-top: 40px; padding-top: 8px; font-size: 28px; letter-spacing: -0.02em; }
+    h3 { margin-top: 28px; font-size: 20px; }
+    p { color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .toolbar { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    button, .link-button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+    }
+    button.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, .05);
+    }
+    .card h3 { margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 16px; overflow: hidden; }
+    th, td { text-align: left; padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #f1f5f9; font-size: 14px; }
+    pre { background: var(--code); color: #e5e7eb; padding: 18px; border-radius: 16px; overflow-x: auto; }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; font-size: 0.94em; }
+    .notice { border-left: 4px solid var(--accent); background: var(--accent-soft); padding: 16px 18px; border-radius: 12px; }
+    .hidden { display: none; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+    .badge { padding: 6px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); font-size: 13px; font-weight: 700; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div class="eyebrow">Database Systems Final Project</div>
+      <h1>NCCU Mathematical Sciences Degree Audit System</h1>
+      <p>Transcript import, rule-based graduation audit, administrative course adjustment, and audit result persistence for NCCU Mathematical Sciences undergraduate students admitted in academic years 111–114.</p>
+      <div class="badges">
+        <span class="badge">React</span><span class="badge">Vite</span><span class="badge">TypeScript</span><span class="badge">Tailwind CSS</span><span class="badge">Node.js</span><span class="badge">Express</span><span class="badge">Sequelize</span><span class="badge">MySQL</span><span class="badge">Docker</span>
+      </div>
+      <div class="toolbar" aria-label="Language switcher">
+        <button id="btn-en" class="active" type="button">English</button>
+        <button id="btn-zh" type="button">繁體中文</button>
+        <a class="link-button" href="../README.md">Back to Repository README</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="en">
+      <h2>Overview</h2>
+      <p>This repository is the final project for the <strong>114-2 Database Systems</strong> course. The system imports transcript JSON files downloaded from iNCCU and evaluates whether a student satisfies the graduation requirements of the NCCU Department of Mathematical Sciences undergraduate program.</p>
+
+      <h2>Modules</h2>
+      <div class="grid">
+        <div class="card"><h3>Student Portal</h3><p>Import transcript JSON files, view imported courses, run degree audits, and review audit results and history.</p></div>
+        <div class="card"><h3>Admin Portal</h3><p>Review unresolved courses, create manual course adjustments, query course data, query graduation rules, and view student audit records.</p></div>
+        <div class="card"><h3>Backend</h3><p>Express API, Sequelize models, MySQL persistence, transcript import, audit rule evaluation, and result storage.</p></div>
+        <div class="card"><h3>Frontend</h3><p>React, Vite, TypeScript, and Tailwind CSS interface for transcript import, audit execution, and result visualization.</p></div>
+      </div>
+
+      <h2>Project Structure</h2>
+      <pre><code>1142-nccu-database-systems/
+├── backend/                # Express API, Sequelize models, audit engine
+├── frontend/               # React + Vite frontend application
+├── data/                   # Course Excel files and demo transcript JSON files
+├── docs/                   # Documentation site and technical documents
+├── performance/            # k6 load testing scripts
+├── docker-compose.yml      # Local Docker Compose setup
+├── requirement.txt         # System and functional requirements
+└── README.md</code></pre>
+
+      <h2>Graduation Requirement Model</h2>
+      <table>
+        <thead><tr><th>Category</th><th>Credits</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Department Required Courses</td><td>51</td><td>Evaluated according to the NCCU Applied Mathematics undergraduate curriculum.</td></tr>
+          <tr><td>Required Physical Education</td><td>4</td><td>Checks whether the required PE credits have been completed.</td></tr>
+          <tr><td>General Education</td><td>28</td><td>Evaluates language, core, humanities, social science, natural science, information literacy, and college-level requirements.</td></tr>
+          <tr><td>Other Electives</td><td>45</td><td>Remaining countable credits after required courses, PE, and general education credits.</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>128</strong></td><td>Minimum graduation credit requirement.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Quick Start</h2>
+      <pre><code>cp backend/.env.example backend/.env
+docker compose up -d --build
+docker compose exec backend npm run seed
+docker compose exec backend npm run seed:transcript
+docker compose exec backend npm run seed:k6-user
+cd frontend
+npm install
+npm run dev</code></pre>
+
+      <h2>Common Commands</h2>
+      <table>
+        <thead><tr><th>Task</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr><td>Start Docker services</td><td><code>docker compose up -d --build</code></td></tr>
+          <tr><td>Check backend health</td><td><code>curl http://localhost:3001/api/health</code></td></tr>
+          <tr><td>Run backend tests</td><td><code>cd backend && npm test</code></td></tr>
+          <tr><td>Run frontend tests</td><td><code>cd frontend && npm test</code></td></tr>
+          <tr><td>Build frontend</td><td><code>cd frontend && npm run build</code></td></tr>
+          <tr><td>Run load test</td><td><code>k6 run performance/k6-audit-test.js</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Security Notice</h2>
+      <p class="notice">Please do not upload real personal transcripts or sensitive academic records to the demo system. Future improvements will include backend authentication, JWT/session management, role-based access control, and stricter authorization checks.</p>
+    </section>
+
+    <section id="zh" class="hidden">
+      <h2>專案概要</h2>
+      <p>本專案為 <strong>114-2 資料庫系統</strong> 期末專案。系統可匯入學生從 iNCCU 下載的 transcript JSON 檔案，並依照政大應數系學士班畢業規則，自動判斷學生是否符合畢業資格。</p>
+
+      <h2>系統模組</h2>
+      <div class="grid">
+        <div class="card"><h3>學生端</h3><p>匯入 transcript JSON、查看已匯入課程、執行畢業審核、查看審核結果與歷史紀錄。</p></div>
+        <div class="card"><h3>管理員端</h3><p>查看待確認課程、建立人工調整、查詢課程資料、查詢畢業規則、查看學生審核紀錄。</p></div>
+        <div class="card"><h3>後端</h3><p>Express API、Sequelize models、MySQL 資料持久化、transcript 匯入、畢業規則計算與審核結果儲存。</p></div>
+        <div class="card"><h3>前端</h3><p>React、Vite、TypeScript、Tailwind CSS，負責 transcript 匯入、畢業審核操作與結果視覺化。</p></div>
+      </div>
+
+      <h2>專案結構</h2>
+      <pre><code>1142-nccu-database-systems/
+├── backend/                # Express API、Sequelize models、audit engine
+├── frontend/               # React + Vite 前端
+├── data/                   # 課程 Excel、demo transcript JSON
+├── docs/                   # 文件網站與技術文件
+├── performance/            # k6 壓測腳本
+├── docker-compose.yml      # 本機 Docker Compose 設定
+├── requirement.txt         # 系統需求與功能需求
+└── README.md</code></pre>
+
+      <h2>畢業規則模型</h2>
+      <table>
+        <thead><tr><th>類別</th><th>學分</th><th>說明</th></tr></thead>
+        <tbody>
+          <tr><td>系必修</td><td>51</td><td>依照政大應數系學士班課程規則檢核。</td></tr>
+          <tr><td>體育必修</td><td>4</td><td>檢查體育必修學分是否完成。</td></tr>
+          <tr><td>通識</td><td>28</td><td>檢查語文、核心、人文、社會、自然、資訊與書院通識等要求。</td></tr>
+          <tr><td>其他選修</td><td>45</td><td>扣除必修、體育、通識後，其餘可採計的選修學分。</td></tr>
+          <tr><td><strong>合計</strong></td><td><strong>128</strong></td><td>畢業最低學分門檻。</td></tr>
+        </tbody>
+      </table>
+
+      <h2>快速啟動</h2>
+      <pre><code>cp backend/.env.example backend/.env
+docker compose up -d --build
+docker compose exec backend npm run seed
+docker compose exec backend npm run seed:transcript
+docker compose exec backend npm run seed:k6-user
+cd frontend
+npm install
+npm run dev</code></pre>
+
+      <h2>常用指令</h2>
+      <table>
+        <thead><tr><th>任務</th><th>指令</th></tr></thead>
+        <tbody>
+          <tr><td>啟動 Docker services</td><td><code>docker compose up -d --build</code></td></tr>
+          <tr><td>檢查後端健康狀態</td><td><code>curl http://localhost:3001/api/health</code></td></tr>
+          <tr><td>執行後端測試</td><td><code>cd backend && npm test</code></td></tr>
+          <tr><td>執行前端測試</td><td><code>cd frontend && npm test</code></td></tr>
+          <tr><td>前端 production build</td><td><code>cd frontend && npm run build</code></td></tr>
+          <tr><td>執行壓力測試</td><td><code>k6 run performance/k6-audit-test.js</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>安全提醒</h2>
+      <p class="notice">請勿將真實個人成績單或敏感學籍資料上傳至 demo 系統。後續改進方向包含後端登入驗證、JWT/session 管理、角色權限控管與更嚴格的授權檢查。</p>
+    </section>
+  </main>
+
+  <script>
+    const en = document.getElementById('en');
+    const zh = document.getElementById('zh');
+    const btnEn = document.getElementById('btn-en');
+    const btnZh = document.getElementById('btn-zh');
+    function setLanguage(lang) {
+      const useZh = lang === 'zh';
+      en.classList.toggle('hidden', useZh);
+      zh.classList.toggle('hidden', !useZh);
+      btnEn.classList.toggle('active', !useZh);
+      btnZh.classList.toggle('active', useZh);
+      document.documentElement.lang = useZh ? 'zh-Hant' : 'en';
+      history.replaceState(null, '', useZh ? '#zh-TW' : '#en');
+    }
+    btnEn.addEventListener('click', () => setLanguage('en'));
+    btnZh.addEventListener('click', () => setLanguage('zh'));
+    if (location.hash.toLowerCase().includes('zh')) setLanguage('zh');
+  </script>
+</body>
+</html>
