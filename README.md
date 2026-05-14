@@ -1,33 +1,27 @@
-# NCCU AMS 畢業審核系統
+# 111學年度~114學年度 政治大學 應用數學系 學士班 畢業審核系統
 
-這是一個「政大畢業審核系統」課程專題。系統可以讓學生匯入 NCCU transcript JSON，後端依照畢業規則計算是否符合畢業資格，前端再用 dashboard 方式顯示審核結果。
+系統可以讓學生匯入 iNCCU 下載的課程成績 JSON 檔案，後端依照畢業規則計算是否符合畢業資格，前端再顯示畢業審核結果。
 
 目前專案重點是：
-
 - 學生端：匯入成績 JSON、查看修課資料、執行畢業審核、查看審核結果與歷史紀錄。
 - 管理員端：查看待確認課程、建立人工調整、查課程資料、查畢業規則、看學生審核紀錄。
 - 後端：Express API + Sequelize + MySQL，負責資料匯入、規則計算、審核結果儲存。
 - 前端：React + Vite + TypeScript + Tailwind CSS，負責操作介面與結果呈現。
 
-> 注意：目前登入/註冊是前端展示流程，還不是正式帳號認證系統。若要正式公開使用，需要再補後端 auth、JWT/session、角色權限檢查。
+> Note. 目前登入/註冊是前端展示流程，還不是正式帳號認證系統。後續會需要再補後端 auth、JWT/session、角色權限檢查。
 
 ## 技術架構
 
 ```text
-Frontend
-React + Vite + TypeScript + Tailwind CSS
+Frontend：React + Vite + TypeScript + Tailwind CSS
 
-Backend
-Node.js + Express + Sequelize
+Backend：Node.js + Express + Sequelize
 
-Database
-MySQL 8
+Database：MySQL
 
-Container
-Docker Compose
+Container：Docker Compose
 ```
-
-專案目錄：
+專案架構：
 
 ```text
 nccu-ams-credit-checker/
@@ -41,7 +35,7 @@ nccu-ams-credit-checker/
 └── README.md
 ```
 
-## 前後端怎麼接起來
+## 前後端嫁接
 
 前端不直接碰資料庫，只呼叫後端 API。
 
