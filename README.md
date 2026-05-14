@@ -34,8 +34,7 @@ The current system focuses on the following modules:
   - Provides the user interface for transcript import, degree audit execution, and result visualization
 
 > **Security Notice**  
-> Please do NOT upload real personal transcripts or sensitive academic records to the demo system.  
-> Future improvements will include backend authentication, JWT/session management, role-based access control, and stricter authorization checks.
+> Please do NOT upload real personal transcripts or sensitive academic records to the demo system. Future improvements will include backend authentication, JWT/session management, role-based access control, and stricter authorization checks.
 
 
 
