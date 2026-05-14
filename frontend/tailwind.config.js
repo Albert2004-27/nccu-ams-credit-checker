@@ -13,7 +13,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ["Noto Sans TC", "Source Han Sans TC", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["Noto Sans TC", "Source Han Sans TC", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["Noto Serif TC", "serif"],
+        brand: ["Cinzel", "serif"]
       }
     }
   },

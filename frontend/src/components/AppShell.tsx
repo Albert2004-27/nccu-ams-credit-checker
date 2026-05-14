@@ -1,15 +1,16 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BookOpen, ClipboardCheck, Database, FileInput, GraduationCap, History, Home, ListChecks, LogOut, Settings, ShieldCheck, UserCog } from "lucide-react";
+import { BookOpen, ChevronRight, ClipboardCheck, Database, FileInput, GraduationCap, History, Home, ListChecks, LogOut, Settings, ShieldCheck, UserCog } from "lucide-react";
 import { clsx } from "clsx";
 import { useHealth } from "../api/hooks";
 import { useAppState } from "../state/AppState";
 
 const studentLinks = [
-  { to: "/student", label: "學生總覽", icon: Home },
-  { to: "/student/import", label: "Transcript 匯入", icon: FileInput },
+  { to: "/student", label: "Dashboard", icon: Home },
+  { to: "/student/import", label: "上傳資料", icon: FileInput },
+  { to: "/student/audit/result", label: "檢核結果", icon: ClipboardCheck },
   { to: "/student/courses", label: "我的修課資料", icon: BookOpen },
-  { to: "/student/audit/run", label: "執行審核", icon: ClipboardCheck },
-  { to: "/student/audit/history", label: "審核歷史", icon: History }
+  { to: "/student/audit/run", label: "執行審核", icon: Settings },
+  { to: "/student/audit/history", label: "歷史紀錄", icon: History }
 ];
 
 const adminLinks = [
@@ -28,6 +29,7 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
   const navigate = useNavigate();
   const studentName = studentProfile?.studentName || currentUser.name;
   const studentNumber = studentProfile?.studentNumber || currentUser.student_number;
+  const avatarLabel = studentName.slice(0, 1) || (role === "admin" ? "管" : "學");
 
   function logout() {
     setRole(null);
@@ -35,51 +37,70 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 border-r border-navy-800 bg-navy-900 text-white lg:block">
-        <div className="flex h-20 items-center gap-3 border-b border-white/10 px-6">
-          <div className="rounded-lg bg-white/10 p-2">
-            <GraduationCap className="h-6 w-6" />
+    <div className="min-h-screen bg-[#f3f6fb] text-slate-900">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(197,160,89,0.12),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(31,95,208,0.10),transparent_32%)]" />
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 overflow-hidden bg-gradient-to-b from-[#071f3f] via-[#082b55] to-[#061831] text-white shadow-2xl shadow-blue-950/40 lg:block">
+        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_20%_10%,rgba(197,160,89,0.28),transparent_45%)]" />
+        <div className="relative flex h-24 items-center gap-3 border-b border-white/10 px-6">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/10 shadow-lg shadow-black/20">
+            <GraduationCap className="h-7 w-7 text-white" />
           </div>
           <div>
-            <p className="text-lg font-bold">畢業審核系統</p>
-            <p className="text-xs text-blue-100">NCCU AMS</p>
+            <p className="font-serif text-xl font-bold leading-tight">NCCU AMS</p>
+            <p className="text-sm font-medium text-blue-100">Credit Checker</p>
           </div>
         </div>
-        <nav className="space-y-1 px-4 py-5">
+        <nav className="relative space-y-2 px-4 py-6">
           {links.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === `/${role}`}
               className={({ isActive }) => clsx(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition",
-                isActive ? "bg-white text-navy-900" : "text-blue-50 hover:bg-white/10"
+                "group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition",
+                isActive ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-950/30" : "text-blue-50/90 hover:bg-white/10 hover:text-white"
               )}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <span className="flex items-center gap-3">
+                <item.icon className="h-5 w-5" />
+                {item.label}
+              </span>
+              <ChevronRight className="h-4 w-4 opacity-0 transition group-hover:opacity-80" />
             </NavLink>
           ))}
         </nav>
+        <div className="absolute inset-x-4 bottom-5 rounded-3xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+          <p className="font-bold">有疑問嗎？</p>
+          <p className="mt-1 text-xs leading-5 text-blue-100">查看常見問題或聯繫教務處，確認人工抵免與替代課程。</p>
+          <div className="mt-3 inline-flex rounded-xl bg-white/10 px-3 py-2 text-xs font-bold text-white">前往說明中心</div>
+        </div>
       </aside>
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur">
+      <div className="relative lg:pl-72">
+        <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 px-5 py-4 shadow-sm shadow-blue-950/5 backdrop-blur-xl">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-navy-700">{role === "student" ? "學生端" : "管理員端"}</p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm font-bold text-navy-800">{role === "student" ? "學生端" : "管理員端"}</p>
+              <p className="text-sm font-medium text-slate-500">
                 {role === "student" ? `${studentName} / 學號 ${studentNumber} / userId ${currentUser.id}` : `目前檢視 userId ${targetUserId}`}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <span className={clsx(
-                "rounded-md border px-2.5 py-1 text-xs font-semibold",
+                "rounded-xl border px-3 py-2 text-xs font-bold",
                 health.data?.status === "ok" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-700"
               )}>
                 後端{health.data?.status === "ok" ? "連線正常" : "連線待確認"}
               </span>
-              <button className="inline-flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" onClick={logout}>
+              <div className="hidden items-center gap-3 rounded-2xl px-2 py-1 md:flex">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#ffe0a6] to-[#79c7ff] text-sm font-black text-navy-900">
+                  {avatarLabel}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-navy-900">{role === "student" ? studentName : currentUser.name}</p>
+                  <p className="text-xs font-semibold text-slate-500">{role === "student" ? `學號：${studentNumber}` : "管理員"}</p>
+                </div>
+              </div>
+              <button className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50" onClick={logout}>
                 <LogOut className="h-4 w-4" />
                 登出
               </button>
@@ -91,7 +112,7 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
         </main>
       </div>
       <div className="fixed bottom-4 right-4 lg:hidden">
-        <NavLink to={role === "student" ? "/student/audit/run" : "/admin/manual-courses"} className="inline-flex items-center gap-2 rounded-full bg-navy-800 px-4 py-3 text-sm font-semibold text-white shadow-lg">
+        <NavLink to={role === "student" ? "/student/audit/run" : "/admin/manual-courses"} className="inline-flex items-center gap-2 rounded-full bg-navy-900 px-4 py-3 text-sm font-bold text-white shadow-lg">
           <Settings className="h-4 w-4" />
           快速操作
         </NavLink>

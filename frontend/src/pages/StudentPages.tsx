@@ -1,6 +1,6 @@
 import { ChangeEvent, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, ClipboardCheck, FileInput, History } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ClipboardCheck, FileInput, History, Sparkles } from "lucide-react";
 import { useAuditHistory, useImportTranscript, useRunAudit, useStudentCourses } from "../api/hooks";
 import { AuditResultView } from "../components/AuditResultView";
 import { MetricTile } from "../components/MetricTile";
@@ -13,24 +13,58 @@ import { useAppState } from "../state/AppState";
 
 export function StudentDashboard() {
   const { currentUser, studentProfile } = useAppState();
+  const history = useAuditHistory(currentUser.id);
   const studentName = studentProfile?.studentName || currentUser.name;
   const studentNumber = studentProfile?.studentNumber || currentUser.student_number;
+  const latestAudit = useMemo(() => (history.data?.rows || []).reduce((current, row) => {
+    if (!current) return row;
+    return row.id > current.id ? row : current;
+  }, null as NonNullable<typeof history.data>["rows"][number] | null), [history.data?.rows]);
+  const ranking = studentProfile?.ranking
+    ? studentProfile.rankingPercent ? `${studentProfile.ranking}（前 ${studentProfile.rankingPercent}）` : studentProfile.ranking
+    : "JSON 匯入後顯示";
 
   return (
-    <div>
-      <PageHeader title="學生端總覽" description="從 transcript 匯入開始，執行畢業審核並查看結果與歷史紀錄。" />
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-gradient-to-r from-white via-[#fff8ec] to-blue-50 p-6 shadow-xl shadow-blue-950/5">
+        <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#C5A059]/20 blur-3xl" />
+        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Student Dashboard</p>
+            <h1 className="mt-2 font-serif text-3xl font-bold text-navy-950">學生端總覽</h1>
+            <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-600">從 transcript 匯入開始，執行畢業審核並查看結果與歷史紀錄。</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <MetricTile label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} icon={<BookOpen className="h-5 w-5" />} />
+            <MetricTile label="成績 Ranking" value={ranking} detail={studentProfile?.averageScore ? `平均成績 ${studentProfile.averageScore}` : "等待 JSON 資料"} icon={<Award className="h-5 w-5" />} />
+            <MetricTile label="最新審核" value={latestAudit ? `${formatCredits(latestAudit.progress_percentage)}%` : "尚無"} detail={latestAudit ? `Audit #${latestAudit.id}` : "尚未執行"} icon={<Sparkles className="h-5 w-5" />} />
+          </div>
+        </div>
+      </section>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricTile label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} />
-        <MetricTile label="User ID" value={currentUser.id} detail="目前後端 API 操作對象" />
-        <Link className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-navy-200" to="/student/import">
-          <FileInput className="mb-3 h-6 w-6 text-navy-700" />
-          <p className="font-bold text-navy-900">匯入 Transcript</p>
-          <p className="mt-1 text-sm text-slate-500">匯入 NCCU JSON 成績資料</p>
+        <Link className="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-[#C5A059]/40 hover:shadow-xl" to="/student/import">
+          <FileInput className="mb-4 h-7 w-7 text-navy-700" />
+          <p className="font-bold text-navy-950">上傳資料</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">匯入 NCCU JSON 成績資料</p>
+          <ArrowRight className="mt-4 h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-navy-800" />
         </Link>
-        <Link className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-navy-200" to="/student/audit/run">
-          <ClipboardCheck className="mb-3 h-6 w-6 text-navy-700" />
-          <p className="font-bold text-navy-900">執行畢業審核</p>
-          <p className="mt-1 text-sm text-slate-500">依 51 + 4 + 28 + 45 規則計算</p>
+        <Link className="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-[#C5A059]/40 hover:shadow-xl" to="/student/audit/run">
+          <ClipboardCheck className="mb-4 h-7 w-7 text-navy-700" />
+          <p className="font-bold text-navy-950">執行畢業審核</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">依 51 + 4 + 28 + 45 規則計算</p>
+          <ArrowRight className="mt-4 h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-navy-800" />
+        </Link>
+        <Link className="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-[#C5A059]/40 hover:shadow-xl" to="/student/audit/result">
+          <BookOpen className="mb-4 h-7 w-7 text-navy-700" />
+          <p className="font-bold text-navy-950">查看檢核結果</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">以 dashboard 方式看缺漏與採計項目</p>
+          <ArrowRight className="mt-4 h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-navy-800" />
+        </Link>
+        <Link className="group rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5 transition hover:-translate-y-0.5 hover:border-[#C5A059]/40 hover:shadow-xl" to="/student/audit/history">
+          <History className="mb-4 h-7 w-7 text-navy-700" />
+          <p className="font-bold text-navy-950">歷史紀錄</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">回看每一次畢業審核結果</p>
+          <ArrowRight className="mt-4 h-4 w-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-navy-800" />
         </Link>
       </div>
     </div>

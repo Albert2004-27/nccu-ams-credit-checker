@@ -1,10 +1,9 @@
-import { AlertTriangle, BookOpenCheck, CheckCircle2, Medal, XCircle } from "lucide-react";
-import { useState } from "react";
-import { formatCredits, getAuditEligibilityLabel } from "../lib/status";
+import { AlertTriangle, Award, BookOpenCheck, CheckCircle2, Clock3, FileWarning, GraduationCap, Layers3, Medal, Sparkles, Trophy } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { formatCredits } from "../lib/status";
 import type { StudentAcademicProfile } from "../lib/transcriptProfile";
 import type { AuditGroup, AuditResult } from "../types/api";
 import { CreditProgressBar } from "./CreditProgressBar";
-import { MetricTile } from "./MetricTile";
 import { StatusBadge } from "./StatusBadge";
 
 const GENERAL_BUCKET_DISPLAY_NAMES: Record<string, string> = {
@@ -45,12 +44,28 @@ function displayCoreCourse(course: Record<string, unknown>) {
   return `${bucketName}：${courseName}`;
 }
 
+function groupByCode(result: AuditResult, groupCode: string) {
+  return result.groups.find((group) => group.groupCode === groupCode);
+}
+
+function percentOf(earned: number, required: number) {
+  if (!required) return earned > 0 ? 100 : 0;
+  return Math.min(100, Math.max(0, (earned / required) * 100));
+}
+
+function displayPercent(value: number) {
+  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
+}
+
+function statusText(isComplete: boolean) {
+  return isComplete ? "完成" : "未完成";
+}
+
 function StudentProfileItem({ label, value, emphasis = false }: { label: string; value?: string; emphasis?: boolean }) {
-  if (!value) return null;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white/80 p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 font-bold ${emphasis ? "text-2xl text-navy-900" : "text-base text-navy-900"}`}>{value}</p>
+    <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm shadow-blue-950/5">
+      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
+      <p className={`mt-2 font-bold ${emphasis ? "text-2xl text-navy-950" : "text-base text-navy-900"}`}>{value || "JSON 未提供"}</p>
     </div>
   );
 }
@@ -62,33 +77,216 @@ function formatRanking(profile: StudentAcademicProfile) {
 
 function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfile }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-navy-100 bg-white shadow-sm">
-      <div className="border-b border-navy-100 bg-gradient-to-r from-navy-900 via-navy-800 to-navy-700 px-5 py-4 text-white">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-white/12 p-2">
-              <BookOpenCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold">學生學籍資訊</h3>
-              <p className="text-sm text-blue-100">由匯入的 NCCU transcript JSON 解析</p>
-            </div>
+    <section className="overflow-hidden rounded-3xl border border-amber-100 bg-gradient-to-r from-white via-[#fff8ec] to-blue-50 p-5 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-navy-900 p-3 text-white shadow-lg shadow-blue-950/20">
+            <BookOpenCheck className="h-5 w-5" />
           </div>
-          {profile.ranking ? (
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-2 text-sm font-semibold">
-              <Medal className="h-4 w-4 text-amber-200" />
-              系排名 {formatRanking(profile)}
-            </div>
-          ) : null}
+          <div>
+            <h3 className="font-serif text-xl font-bold text-navy-950">學生學籍資訊</h3>
+            <p className="text-sm text-slate-500">由匯入的 NCCU transcript JSON 解析</p>
+          </div>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/30 bg-white/80 px-4 py-2 text-sm font-bold text-navy-900">
+          <Medal className="h-4 w-4 text-[#C5A059]" />
+          排名：{formatRanking(profile) || "JSON 未提供"}
         </div>
       </div>
-      <div className="grid gap-3 bg-slate-50 p-5 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         <StudentProfileItem label="主修" value={profile.major} emphasis />
         <StudentProfileItem label="雙主修" value={profile.doubleMajor} />
         <StudentProfileItem label="輔修" value={profile.minor} />
-        <StudentProfileItem label="系排名" value={formatRanking(profile)} />
-        <StudentProfileItem label="總平均" value={profile.averageScore} />
+        <StudentProfileItem label="成績 Ranking" value={formatRanking(profile)} />
+        <StudentProfileItem label="平均成績" value={profile.averageScore} />
       </div>
+    </section>
+  );
+}
+
+function ResultHero({ result, studentProfile }: { result: AuditResult; studentProfile?: StudentAcademicProfile | null }) {
+  const eligible = result.graduationEligible;
+  const studentName = studentProfile?.studentName ? `${studentProfile.studentName}，` : "";
+  const statusColor = eligible ? "text-emerald-700" : "text-orange-600";
+  const StatusIcon = eligible ? CheckCircle2 : AlertTriangle;
+
+  return (
+    <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-[#fffaf1] p-6 shadow-xl shadow-blue-950/5">
+      <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[#C5A059]/20 blur-3xl" />
+      <div className="absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="relative flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex gap-4">
+          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full ${eligible ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-600"}`}>
+            <StatusIcon className="h-9 w-9" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Graduation Audit</p>
+            <h2 className="mt-2 font-serif text-2xl font-bold text-navy-950 md:text-3xl">
+              {studentName}畢業檢核結果：<span className={statusColor}>{eligible ? "已完成" : "尚未完成"}</span>
+            </h2>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-slate-600">
+              <span>目前採計 {formatCredits(result.totalCredits.earned)} / {formatCredits(result.totalCredits.required)} 學分</span>
+              <span className="text-orange-600">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
+              <span>規則版本：{result.academicYear} 學年度 / {result.department}</span>
+              <span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" />模式 {result.mode}</span>
+            </div>
+          </div>
+        </div>
+        <div className="grid min-w-[320px] gap-3 sm:grid-cols-3">
+          <HeroInfoCard icon={<GraduationCap className="h-5 w-5" />} label="主修" value={studentProfile?.major || result.department} />
+          <HeroInfoCard icon={<Award className="h-5 w-5" />} label="成績 Ranking" value={studentProfile ? formatRanking(studentProfile) || "JSON 未提供" : "JSON 未提供"} />
+          <HeroInfoCard icon={<Sparkles className="h-5 w-5" />} label="平均成績" value={studentProfile?.averageScore || "JSON 未提供"} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeroInfoCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-lg shadow-blue-950/5 backdrop-blur">
+      <div className="mb-2 inline-flex rounded-xl bg-blue-50 p-2 text-navy-800">
+        {icon}
+      </div>
+      <p className="text-xs font-bold tracking-[0.16em] text-slate-400">{label}</p>
+      <p className="mt-1 font-bold text-navy-950">{value}</p>
+    </div>
+  );
+}
+
+function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
+  title: string;
+  group?: AuditGroup;
+  earned: number;
+  required: number;
+  icon: ReactNode;
+  tone: "blue" | "green" | "purple" | "gold";
+}) {
+  const progress = percentOf(earned, required);
+  const isComplete = group ? group.status === "COMPLETE" : progress >= 100;
+  const toneClass = {
+    blue: "from-navy-900 to-blue-700 text-blue-50 bg-blue-50",
+    green: "from-emerald-700 to-teal-500 text-emerald-50 bg-emerald-50",
+    purple: "from-violet-700 to-indigo-500 text-violet-50 bg-violet-50",
+    gold: "from-[#9f7c31] to-[#C5A059] text-amber-50 bg-amber-50"
+  }[tone];
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className={`rounded-2xl bg-gradient-to-br p-3 shadow-lg ${toneClass}`}>
+            {icon}
+          </div>
+          <div>
+            <p className="font-bold text-navy-950">{title}</p>
+            <p className="mt-1 text-2xl font-black text-navy-950">{formatCredits(earned)} / {formatCredits(required)} <span className="text-base font-semibold text-slate-500">學分</span></p>
+          </div>
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-bold ${isComplete ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}>
+          {statusText(isComplete)}
+        </span>
+      </div>
+      <div className="mt-4">
+        <CreditProgressBar value={earned} max={required || 1} />
+        <p className="mt-1 text-right text-xs font-bold text-navy-800">{displayPercent(progress)}</p>
+      </div>
+    </section>
+  );
+}
+
+function GraduationRing({ progress, eligible }: { progress: number; eligible: boolean }) {
+  const safeProgress = Math.min(100, Math.max(0, progress));
+  return (
+    <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(#1f5fd0 ${safeProgress * 3.6}deg, #e2e8f0 0deg)` }}>
+      <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white text-center shadow-lg shadow-blue-950/10">
+        <p className="text-3xl font-black text-navy-950">{displayPercent(safeProgress)}</p>
+        <p className="mt-1 text-xs font-bold tracking-[0.16em] text-slate-400">總進度</p>
+        <span className={`mt-2 rounded-full px-3 py-1 text-xs font-bold ${eligible ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}>
+          {eligible ? "已完成" : "尚未完成"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function GraduationProgressPanel({ result }: { result: AuditResult }) {
+  const rows = [
+    { label: "必修課程", group: groupByCode(result, "REQUIRED"), required: result.totalCredits.structure.required },
+    { label: "通識課程", group: groupByCode(result, "GENERAL"), required: result.totalCredits.structure.generalEducation },
+    { label: "選修課程", group: groupByCode(result, "ELECTIVE"), required: result.totalCredits.structure.elective },
+    { label: "體育課程", group: groupByCode(result, "PE"), required: result.totalCredits.structure.physicalEducation }
+  ].filter((row) => row.group || row.required > 0);
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <h3 className="font-serif text-xl font-bold text-navy-950">畢業進度</h3>
+        <span className="text-sm font-medium text-slate-500">Graduation Progress</span>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
+        <GraduationRing progress={result.progressPercentage} eligible={result.graduationEligible} />
+        <div className="space-y-4">
+          {rows.map((row) => {
+            const earned = Number(row.group?.earnedCredits || 0);
+            const required = Number(row.group?.requiredCredits || row.required || 0);
+            return (
+              <div className="grid gap-2 md:grid-cols-[96px_1fr_120px]" key={row.label}>
+                <p className="font-bold text-navy-900">{row.label}</p>
+                <CreditProgressBar value={earned} max={required || 1} />
+                <p className="text-right text-sm font-semibold text-slate-600">{formatCredits(earned)} / {formatCredits(required)}　{required ? displayPercent(percentOf(earned, required)) : "—"}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ActionRequiredPanel({ result }: { result: AuditResult }) {
+  const missingItems = result.groups.flatMap((group) => (group.missingCourses || []).map((course) => ({
+    title: `缺少：${String(course.courseName || group.groupName)}`,
+    tag: group.groupName,
+    tone: "red" as const
+  })));
+  const uncountedCount = result.groups.reduce((sum, group) => sum + (group.uncountedCourses?.length || 0), 0);
+  const items = [
+    ...missingItems.slice(0, 2),
+    ...(result.totalCredits.missing > 0 ? [{ title: `尚缺 ${formatCredits(result.totalCredits.missing)} 學分`, tag: "未完成", tone: "orange" as const }] : []),
+    ...(uncountedCount > 0 ? [{ title: `有 ${uncountedCount} 門課不可採計`, tag: "需留意", tone: "amber" as const }] : []),
+    ...(result.warnings.length ? [{ title: result.warnings[0], tag: "系統提醒", tone: "purple" as const }] : [])
+  ].slice(0, 4);
+  const toneClass = {
+    red: "border-red-100 bg-red-50 text-red-700",
+    orange: "border-orange-100 bg-orange-50 text-orange-700",
+    amber: "border-amber-100 bg-amber-50 text-amber-700",
+    purple: "border-violet-100 bg-violet-50 text-violet-700"
+  };
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-serif text-xl font-bold text-navy-950">待處理事項</h3>
+          <p className="text-sm text-slate-500">Action Required</p>
+        </div>
+        <FileWarning className="h-5 w-5 text-orange-500" />
+      </div>
+      {items.length ? (
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div className={`flex items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-sm ${toneClass[item.tone]}`} key={`${item.title}-${index}`}>
+              <p className="font-bold">{item.title}</p>
+              <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-xs font-bold">{item.tag}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
+          目前沒有待處理事項
+        </div>
+      )}
     </section>
   );
 }
@@ -197,38 +395,37 @@ function GroupPanel({ group }: { group: AuditGroup }) {
 export function AuditResultView({ result, studentProfile }: { result: AuditResult; studentProfile?: StudentAcademicProfile | null }) {
   const [mode, setMode] = useState<"official" | "projected">("official");
   const active = mode === "projected" && result.projectedResult ? result.projectedResult : result;
+  const requiredGroup = groupByCode(active, "REQUIRED");
+  const generalGroup = groupByCode(active, "GENERAL");
+  const electiveGroup = groupByCode(active, "ELECTIVE");
+  const totalGroup = groupByCode(active, "TOTAL");
+  const tabGroups = active.groups.filter((group) => ["REQUIRED", "GENERAL", "ELECTIVE", "PE", "TOTAL"].includes(group.groupCode));
+  const defaultTab = tabGroups.find((group) => group.groupCode === "GENERAL") || tabGroups[0] || null;
+  const [selectedGroupCode, setSelectedGroupCode] = useState(defaultTab?.groupCode || "");
+  const selectedGroup = tabGroups.find((group) => group.groupCode === selectedGroupCode) || defaultTab;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {result.projectedResult ? (
-        <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1">
-          <button className={`rounded-md px-4 py-2 text-sm font-semibold ${mode === "official" ? "bg-navy-800 text-white" : "text-slate-600"}`} onClick={() => setMode("official")}>正式結果</button>
-          <button className={`rounded-md px-4 py-2 text-sm font-semibold ${mode === "projected" ? "bg-navy-800 text-white" : "text-slate-600"}`} onClick={() => setMode("projected")}>預估結果</button>
+        <div className="inline-flex rounded-2xl border border-slate-200 bg-white p-1 shadow-sm shadow-blue-950/5">
+          <button className={`rounded-xl px-5 py-2 text-sm font-bold transition ${mode === "official" ? "bg-navy-900 text-white shadow-lg shadow-blue-950/20" : "text-slate-600 hover:bg-slate-50"}`} onClick={() => setMode("official")}>正式結果</button>
+          <button className={`rounded-xl px-5 py-2 text-sm font-bold transition ${mode === "projected" ? "bg-navy-900 text-white shadow-lg shadow-blue-950/20" : "text-slate-600 hover:bg-slate-50"}`} onClick={() => setMode("projected")}>預估結果</button>
         </div>
       ) : null}
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            {active.graduationEligible ? <CheckCircle2 className="h-12 w-12 text-emerald-600" /> : <XCircle className="h-12 w-12 text-red-600" />}
-            <div>
-              <h2 className="text-2xl font-bold text-navy-900">{getAuditEligibilityLabel(active.graduationEligible)}</h2>
-              <p className="text-sm text-slate-500">模式：{active.mode}，學年度：{active.academicYear}</p>
-            </div>
-          </div>
-          <div className="w-full md:w-72">
-            <CreditProgressBar value={active.totalCredits.earned} max={active.totalCredits.required} label="總完成率" />
-          </div>
-        </div>
-      </section>
+      <ResultHero result={active} studentProfile={studentProfile} />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricTile label="採計學分" value={`${formatCredits(active.totalCredits.earned)} / ${formatCredits(active.totalCredits.required)}`} />
-        <MetricTile label="缺少學分" value={formatCredits(active.totalCredits.missing)} />
-        <MetricTile label="完成率" value={`${active.progressPercentage}%`} />
-        <MetricTile label="排除學分" value={formatCredits(active.totalCredits.excludedByRules)} />
+        <CategoryProgressCard title="必修課程" group={requiredGroup} earned={Number(requiredGroup?.earnedCredits || 0)} required={Number(requiredGroup?.requiredCredits || active.totalCredits.structure.required)} icon={<BookOpenCheck className="h-6 w-6" />} tone="blue" />
+        <CategoryProgressCard title="通識課程" group={generalGroup} earned={Number(generalGroup?.earnedCredits || 0)} required={Number(generalGroup?.requiredCredits || active.totalCredits.structure.generalEducation)} icon={<GraduationCap className="h-6 w-6" />} tone="green" />
+        <CategoryProgressCard title="選修課程" group={electiveGroup} earned={Number(electiveGroup?.earnedCredits || 0)} required={Number(electiveGroup?.requiredCredits || active.totalCredits.structure.elective)} icon={<Layers3 className="h-6 w-6" />} tone="purple" />
+        <CategoryProgressCard title="畢業總學分" group={totalGroup} earned={Number(active.totalCredits.earned || 0)} required={Number(active.totalCredits.required || 0)} icon={<Trophy className="h-6 w-6" />} tone="gold" />
       </div>
       {studentProfile ? <StudentAcademicProfileCard profile={studentProfile} /> : null}
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <GraduationProgressPanel result={active} />
+        <ActionRequiredPanel result={active} />
+      </div>
       {active.warnings.length ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5">
           <div className="mb-2 flex items-center gap-2 font-semibold text-amber-800">
             <AlertTriangle className="h-4 w-4" />
             系統提醒
@@ -238,9 +435,22 @@ export function AuditResultView({ result, studentProfile }: { result: AuditResul
           </ul>
         </div>
       ) : null}
-      <div className="space-y-4">
-        {active.groups.map((group) => <GroupPanel group={group} key={group.groupCode} />)}
-      </div>
+      {tabGroups.length ? (
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
+          <div className="mb-4 flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+            {tabGroups.map((group) => (
+              <button
+                className={`rounded-xl px-4 py-2 text-sm font-bold transition ${selectedGroup?.groupCode === group.groupCode ? "bg-navy-900 text-white shadow-lg shadow-blue-950/20" : "bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-navy-900"}`}
+                key={group.groupCode}
+                onClick={() => setSelectedGroupCode(group.groupCode)}
+              >
+                {displayGroupName(group)}
+              </button>
+            ))}
+          </div>
+          {selectedGroup ? <GroupPanel group={selectedGroup} /> : null}
+        </section>
+      ) : null}
     </div>
   );
 }
