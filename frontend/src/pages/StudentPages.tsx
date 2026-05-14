@@ -1,6 +1,6 @@
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, type ReactNode, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Award, BookOpen, ClipboardCheck, FileInput, History, Sparkles } from "lucide-react";
+import { ArrowRight, Award, BookOpen, ClipboardCheck, FileInput, GraduationCap, History, Sparkles } from "lucide-react";
 import { useAuditHistory, useImportTranscript, useRunAudit, useStudentCourses } from "../api/hooks";
 import { AuditResultView } from "../components/AuditResultView";
 import { MetricTile } from "../components/MetricTile";
@@ -10,6 +10,19 @@ import { StatusBadge } from "../components/StatusBadge";
 import { formatCredits } from "../lib/status";
 import { extractStudentAcademicProfile } from "../lib/transcriptProfile";
 import { useAppState } from "../state/AppState";
+
+function StudentSummaryItem({ label, value, detail, icon }: { label: string; value: string; detail?: string; icon?: ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm shadow-blue-950/5">
+      {icon ? <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-navy-800">{icon}</div> : null}
+      <div className="min-w-0">
+        <p className="text-xs font-bold tracking-[0.16em] text-slate-400">{label}</p>
+        <p className="truncate text-base font-black text-navy-950">{value}</p>
+        {detail ? <p className="truncate text-xs font-semibold text-slate-500">{detail}</p> : null}
+      </div>
+    </div>
+  );
+}
 
 export function StudentDashboard() {
   const { currentUser, studentProfile } = useAppState();
@@ -21,23 +34,28 @@ export function StudentDashboard() {
     return row.id > current.id ? row : current;
   }, null as NonNullable<typeof history.data>["rows"][number] | null), [history.data?.rows]);
   const ranking = studentProfile?.ranking
-    ? studentProfile.rankingPercent ? `${studentProfile.ranking}（前 ${studentProfile.rankingPercent}）` : studentProfile.ranking
-    : "JSON 匯入後顯示";
+    ? studentProfile.ranking
+    : "未匯入";
+  const rankingDetail = studentProfile?.rankingPercent
+    ? `前 ${studentProfile.rankingPercent}`
+    : studentProfile?.averageScore ? `平均成績 ${studentProfile.averageScore}` : "等待 JSON 資料";
 
   return (
     <div className="space-y-5">
       <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-gradient-to-r from-white via-[#fff8ec] to-blue-50 p-6 shadow-xl shadow-blue-950/5">
         <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#C5A059]/20 blur-3xl" />
-        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="relative">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Student Dashboard</p>
             <h1 className="mt-2 font-serif text-3xl font-bold text-navy-950">學生端總覽</h1>
             <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-600">從 transcript 匯入開始，執行畢業審核並查看結果與歷史紀錄。</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <MetricTile label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} icon={<BookOpen className="h-5 w-5" />} />
-            <MetricTile label="成績 Ranking" value={ranking} detail={studentProfile?.averageScore ? `平均成績 ${studentProfile.averageScore}` : "等待 JSON 資料"} icon={<Award className="h-5 w-5" />} />
-            <MetricTile label="最新審核" value={latestAudit ? `${formatCredits(latestAudit.progress_percentage)}%` : "尚無"} detail={latestAudit ? `Audit #${latestAudit.id}` : "尚未執行"} icon={<Sparkles className="h-5 w-5" />} />
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            <StudentSummaryItem label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} icon={<BookOpen className="h-5 w-5" />} />
+            <StudentSummaryItem label="主修" value={studentProfile?.major || "JSON 匯入後顯示"} detail={studentProfile?.doubleMajor ? `雙主修 ${studentProfile.doubleMajor}` : "學籍資料"} icon={<GraduationCap className="h-5 w-5" />} />
+            <StudentSummaryItem label="Ranking" value={ranking} detail={rankingDetail} icon={<Award className="h-5 w-5" />} />
+            <StudentSummaryItem label="平均成績" value={studentProfile?.averageScore || "未匯入"} detail="Transcript total average" icon={<Sparkles className="h-5 w-5" />} />
+            <StudentSummaryItem label="最新審核" value={latestAudit ? `${formatCredits(latestAudit.progress_percentage)}%` : "尚無"} detail={latestAudit ? `Audit #${latestAudit.id}` : "尚未執行"} icon={<ClipboardCheck className="h-5 w-5" />} />
           </div>
         </div>
       </section>

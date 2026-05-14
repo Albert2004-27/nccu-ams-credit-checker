@@ -57,6 +57,21 @@ function displayPercent(value: number) {
   return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
 }
 
+function ThinProgressBar({ percent, tone = "blue" }: { percent: number; tone?: "blue" | "green" | "purple" | "gold" }) {
+  const safePercent = Math.min(100, Math.max(0, percent));
+  const toneClass = {
+    blue: "bg-blue-700",
+    green: "bg-emerald-600",
+    purple: "bg-violet-600",
+    gold: "bg-[#C5A059]"
+  }[tone];
+  return (
+    <div className="h-2 rounded-full bg-slate-200">
+      <div className={`h-2 rounded-full ${toneClass}`} style={{ width: `${safePercent}%` }} />
+    </div>
+  );
+}
+
 function statusText(isComplete: boolean) {
   return isComplete ? "完成" : "未完成";
 }
@@ -188,7 +203,7 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
         </span>
       </div>
       <div className="mt-4">
-        <CreditProgressBar value={earned} max={required || 1} />
+        <ThinProgressBar percent={progress} tone={tone} />
         <p className="mt-1 text-right text-xs font-bold text-navy-800">{displayPercent(progress)}</p>
       </div>
     </section>
@@ -212,10 +227,10 @@ function GraduationRing({ progress, eligible }: { progress: number; eligible: bo
 
 function GraduationProgressPanel({ result }: { result: AuditResult }) {
   const rows = [
-    { label: "必修課程", group: groupByCode(result, "REQUIRED"), required: result.totalCredits.structure.required },
-    { label: "通識課程", group: groupByCode(result, "GENERAL"), required: result.totalCredits.structure.generalEducation },
-    { label: "選修課程", group: groupByCode(result, "ELECTIVE"), required: result.totalCredits.structure.elective },
-    { label: "體育課程", group: groupByCode(result, "PE"), required: result.totalCredits.structure.physicalEducation }
+    { label: "必修課程", group: groupByCode(result, "REQUIRED"), required: result.totalCredits.structure.required, tone: "blue" as const },
+    { label: "通識課程", group: groupByCode(result, "GENERAL"), required: result.totalCredits.structure.generalEducation, tone: "green" as const },
+    { label: "選修課程", group: groupByCode(result, "ELECTIVE"), required: result.totalCredits.structure.elective, tone: "purple" as const },
+    { label: "體育課程", group: groupByCode(result, "PE"), required: result.totalCredits.structure.physicalEducation, tone: "gold" as const }
   ].filter((row) => row.group || row.required > 0);
 
   return (
@@ -226,15 +241,21 @@ function GraduationProgressPanel({ result }: { result: AuditResult }) {
       </div>
       <div className="grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
         <GraduationRing progress={result.progressPercentage} eligible={result.graduationEligible} />
-        <div className="space-y-4">
+        <div className="space-y-3">
           {rows.map((row) => {
             const earned = Number(row.group?.earnedCredits || 0);
             const required = Number(row.group?.requiredCredits || row.required || 0);
+            const percent = required ? percentOf(earned, required) : 0;
             return (
-              <div className="grid gap-2 md:grid-cols-[96px_1fr_120px]" key={row.label}>
-                <p className="font-bold text-navy-900">{row.label}</p>
-                <CreditProgressBar value={earned} max={required || 1} />
-                <p className="text-right text-sm font-semibold text-slate-600">{formatCredits(earned)} / {formatCredits(required)}　{required ? displayPercent(percentOf(earned, required)) : "—"}</p>
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3" key={row.label}>
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <p className="whitespace-nowrap font-bold text-navy-950">{row.label}</p>
+                  <p className="whitespace-nowrap text-sm font-bold text-slate-600">
+                    {formatCredits(earned)} / {formatCredits(required)}
+                    <span className="ml-3 text-navy-900">{required ? displayPercent(percent) : "—"}</span>
+                  </p>
+                </div>
+                <ThinProgressBar percent={percent} tone={row.tone} />
               </div>
             );
           })}
@@ -248,17 +269,16 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
   const missingItems = result.groups.flatMap((group) => (group.missingCourses || []).map((course) => ({
     title: `缺少：${String(course.courseName || group.groupName)}`,
     tag: group.groupName,
-    tone: "red" as const
+    acceptedCodes: Array.isArray(course.acceptedCourseCodes) ? course.acceptedCourseCodes.join("、") : ""
   })));
   const uncountedCount = result.groups.reduce((sum, group) => sum + (group.uncountedCourses?.length || 0), 0);
-  const items = [
-    ...missingItems.slice(0, 2),
+  const summaryItems = [
     ...(result.totalCredits.missing > 0 ? [{ title: `尚缺 ${formatCredits(result.totalCredits.missing)} 學分`, tag: "未完成", tone: "orange" as const }] : []),
     ...(uncountedCount > 0 ? [{ title: `有 ${uncountedCount} 門課不可採計`, tag: "需留意", tone: "amber" as const }] : []),
     ...(result.warnings.length ? [{ title: result.warnings[0], tag: "系統提醒", tone: "purple" as const }] : [])
-  ].slice(0, 4);
+  ];
+  const hasItems = missingItems.length || summaryItems.length;
   const toneClass = {
-    red: "border-red-100 bg-red-50 text-red-700",
     orange: "border-orange-100 bg-orange-50 text-orange-700",
     amber: "border-amber-100 bg-amber-50 text-amber-700",
     purple: "border-violet-100 bg-violet-50 text-violet-700"
@@ -273,9 +293,28 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
         </div>
         <FileWarning className="h-5 w-5 text-orange-500" />
       </div>
-      {items.length ? (
-        <div className="space-y-2">
-          {items.map((item, index) => (
+      {hasItems ? (
+        <div className="space-y-4">
+          {missingItems.length ? (
+            <div>
+              <div className="mb-2 flex items-center justify-between text-sm">
+                <p className="font-bold text-red-800">缺少必修項目</p>
+                <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700">{missingItems.length} 項</span>
+              </div>
+              <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                {missingItems.map((item, index) => (
+                  <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700" key={`${item.title}-${index}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="font-bold">{item.title}</p>
+                      <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-xs font-bold">{item.tag}</span>
+                    </div>
+                    {item.acceptedCodes ? <p className="mt-1 text-xs font-semibold text-red-500">可接受課號：{item.acceptedCodes}</p> : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {summaryItems.map((item, index) => (
             <div className={`flex items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-sm ${toneClass[item.tone]}`} key={`${item.title}-${index}`}>
               <p className="font-bold">{item.title}</p>
               <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-xs font-bold">{item.tag}</span>

@@ -119,4 +119,56 @@ describe("AuditResultView", () => {
     expect(screen.getAllByText("平均成績").length).toBeGreaterThan(0);
     expect(screen.getAllByText("94.55").length).toBeGreaterThan(0);
   });
+
+  it("shows every missing required course in action required", () => {
+    const incompleteResult: AuditResult = {
+      ...baseResult,
+      graduationEligible: false,
+      progressPercentage: 67.2,
+      totalCredits: {
+        ...baseResult.totalCredits,
+        earned: 86,
+        missing: 42,
+        excludedByRules: 78
+      },
+      groups: [
+        {
+          groupCode: "REQUIRED",
+          groupName: "系必修",
+          status: "INCOMPLETE",
+          earnedCredits: 9,
+          requiredCredits: 51,
+          missingCredits: 42,
+          missingCourses: [
+            { courseName: "微積分（上學期）" },
+            { courseName: "微積分（下學期）" },
+            { courseName: "計算機程式" },
+            { courseName: "離散數學" },
+            { courseName: "高等微積分（上學期）" }
+          ]
+        },
+        {
+          groupCode: "ELECTIVE",
+          groupName: "其他選修",
+          status: "COMPLETE",
+          earnedCredits: 45,
+          requiredCredits: 45,
+          missingCredits: 0,
+          uncountedCourses: [
+            { courseName: "人工智慧方法與工具" },
+            { courseName: "國際金融" }
+          ]
+        }
+      ]
+    };
+
+    render(<AuditResultView result={incompleteResult} />);
+
+    expect(screen.getByText("缺少：微積分（上學期）")).toBeInTheDocument();
+    expect(screen.getByText("缺少：微積分（下學期）")).toBeInTheDocument();
+    expect(screen.getByText("缺少：計算機程式")).toBeInTheDocument();
+    expect(screen.getByText("缺少：離散數學")).toBeInTheDocument();
+    expect(screen.getByText("缺少：高等微積分（上學期）")).toBeInTheDocument();
+    expect(screen.getByText("有 2 門課不可採計")).toBeInTheDocument();
+  });
 });
