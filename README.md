@@ -211,13 +211,12 @@ The current system adopts a **128-credit graduation structure** and evaluates cr
 ### Credit Structure
 
 | Category | Credits | Description |
-||:||
+|---|---:|---|
 | Department Required Courses | 51 | Evaluated according to the NCCU Applied Mathematics undergraduate curriculum |
 | Required Physical Education | 4 | Checks whether the required PE credits have been completed |
 | General Education | 28 | Evaluates language, core, humanities, social science, natural science, information literacy, and college-level requirements |
 | Other Electives | 45 | Remaining countable credits after required courses, PE, and general education credits |
 | **Total** | **128** | Minimum graduation credit requirement |
-
 
 
 ### General Education Requirements
@@ -242,7 +241,7 @@ For **Core General Education**, the system explicitly lists the core-domain cour
 ## Environment Requirements
 
 | Tool | Recommended Version |
-|||
+|---|---|
 | Docker Desktop | 4.0+ |
 | Node.js | 18.0.0+ |
 | npm | 9.0+ |
@@ -330,10 +329,9 @@ npm run dev
 The services will be available at:
 
 | Service | URL |
-|||
+|---|---|
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:3001` |
-
 
 
 ## Free Online Demo with Cloudflare Tunnel
@@ -422,12 +420,11 @@ curl -X POST http://localhost:3001/api/audit/run \
 ```
 
 | Parameter | Type | Description |
-||||
+|---|---|---|
 | `userId` | number | Student user ID to audit |
 | `academicYear` | string | Applicable academic year, for example `111` |
 | `includeInProgress` | boolean | Whether to include currently enrolled courses in the projected result |
 | `saveResult` | boolean | Whether to persist the audit result into `audit_results` |
-
 
 
 ### Query Audit History
@@ -466,7 +463,7 @@ or approved substitute course records.
 ### Student Portal
 
 | Route | Description |
-|||
+|---|---|
 | `/student` | Student dashboard |
 | `/student/import` | Import transcript JSON |
 | `/student/courses` | View imported courses |
@@ -479,14 +476,13 @@ or approved substitute course records.
 ### Admin Portal
 
 | Route | Description |
-|||
+|---|---|
 | `/admin` | Admin dashboard |
 | `/admin/unresolved` | Review unresolved courses |
 | `/admin/manual-courses` | Create manual course adjustments |
 | `/admin/courses` | Manage course data |
 | `/admin/requirements` | Manage graduation requirements |
 | `/admin/audit-history` | View audit records |
-
 
 
 ## Testing and Validation
@@ -540,7 +536,7 @@ k6 run performance/k6-audit-test.js
 ## Command Reference
 
 | Task | Command |
-|||
+|---|---|
 | Start Docker services | `docker compose up -d --build` |
 | Check container status | `docker compose ps` |
 | Seed course data | `docker compose exec backend npm run seed` |
@@ -728,7 +724,7 @@ flowchart LR
 ### 學分結構
 
 | 類別 | 學分數 | 說明 |
-||:||
+|---|---:|---|
 | 系必修 | 51 | 依政大應數系學士班課程規則檢核 |
 | 體育必修 | 4 | 檢查體育必修學分是否完成 |
 | 通識 | 28 | 檢查語文、核心、自然、社會、人文等通識要求 |
@@ -755,7 +751,7 @@ flowchart LR
 ## 環境需求
 
 | 工具 | 建議版本 |
-|||
+|---|---|
 | Docker Desktop | 4.0+ |
 | Node.js | 18.0.0+ |
 | npm | 9.0+ |
@@ -835,7 +831,7 @@ npm run dev
 啟動後可開啟：
 
 | 服務 | URL |
-|||
+|---|---|
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:3001` |
 
@@ -909,7 +905,7 @@ curl -X POST http://localhost:3001/api/audit/run \
 ```
 
 | 參數 | 型別 | 說明 |
-||||
+|---|---|---|
 | `userId` | number | 要審核的學生 ID |
 | `academicYear` | string | 適用學年度，例如 `111` |
 | `includeInProgress` | boolean | 是否將修課中課程納入預估結果 |
@@ -942,7 +938,7 @@ POST /api/admin/manual-courses
 ### 學生端
 
 | 頁面 | 說明 |
-|||
+|---|---|
 | `/student` | 學生首頁 |
 | `/student/import` | 匯入 transcript JSON |
 | `/student/courses` | 查看已匯入課程 |
@@ -953,7 +949,7 @@ POST /api/admin/manual-courses
 ### 管理員端
 
 | 頁面 | 說明 |
-|||
+|---|---|
 | `/admin` | 管理員首頁 |
 | `/admin/unresolved` | 查看待確認課程 |
 | `/admin/manual-courses` | 建立人工調整課程 |
@@ -1002,7 +998,7 @@ k6 run performance/k6-audit-test.js
 ## 專案啟動指令總覽
 
 | 任務 | 指令 |
-|||
+|---|---|
 | 啟動 Docker services | `docker compose up -d --build` |
 | 查看 container 狀態 | `docker compose ps` |
 | 匯入基礎課程資料 | `docker compose exec backend npm run seed` |
