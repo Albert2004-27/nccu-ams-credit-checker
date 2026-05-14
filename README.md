@@ -1,4 +1,10 @@
-# 111-114 NCCU Mathematical Sciences Undergraduate Degree Audit System  
+# 111-114 NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System (DARS) 
+
+## Degree Audit Reporting System (DARS)
+
+The Degree Audit Reporting System (DARS) is a computer generated report for undergraduate and associate level students that matches the requirements of a degree program with a student's course work taken. The audit identifies those graduation requirements that are completed as well as those requirements that still need to be completed.
+
+## Introduction 
 
 This repository is the final project for the **114-2 Database Systems** course.
 
