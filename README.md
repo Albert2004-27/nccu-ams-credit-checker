@@ -198,8 +198,6 @@ flowchart LR
 
 其中，核心通識會明確列出學生已通過的核心領域課程，方便確認是否符合畢業要求。
 
----
-
 ## 環境需求
 
 | 工具 | 建議版本 |
@@ -208,8 +206,6 @@ flowchart LR
 | Node.js | 18.0.0+ |
 | npm | 9.0+ |
 | cloudflared | 選用，僅 Cloudflare Tunnel demo 需要 |
-
----
 
 ## 快速啟動
 
@@ -222,8 +218,6 @@ cp backend/.env.example backend/.env
 請開啟 `backend/.env`，填入實際資料庫帳號與密碼。
 
 同時確認 `docker-compose.yml` 中的 MySQL 設定與 `.env` 一致。
-
----
 
 ### 2. 啟動後端與 MySQL
 
@@ -258,8 +252,6 @@ curl http://localhost:3001/api/health
 {"status":"ok"}
 ```
 
----
-
 ### 3. 匯入基礎資料
 
 資料庫第一次建立後，需要匯入課程、demo transcript 與測試使用者資料。
@@ -275,8 +267,6 @@ docker compose exec backend npm run seed:k6-user
 ```bash
 docker compose exec backend npm run reset:demo
 ```
-
----
 
 ### 4. 啟動前端
 
@@ -294,8 +284,6 @@ npm run dev
 |---|---|
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:3001` |
-
----
 
 ## 免費線上 Demo：Cloudflare Tunnel
 
@@ -337,17 +325,13 @@ https://xxxx.trycloudflare.com
 > 每次重新啟動 tunnel，網址可能會更換。  
 > 展示期間需保持電腦、Docker、Vite 與 cloudflared 持續執行。
 
----
-
 ## 常用 API
 
-### 健康檢查
+### 基礎檢查
 
 ```bash
 curl http://localhost:3001/api/health
 ```
-
----
 
 ### 匯入 transcript JSON
 
@@ -362,8 +346,6 @@ POST /api/transcripts/import
 並建立 transcript_imports 與 student_courses 紀錄。
 ```
 
----
-
 ### 執行畢業審核
 
 ```bash
@@ -372,8 +354,6 @@ curl -X POST http://localhost:3001/api/audit/run \
   -d '{"userId":1,"academicYear":"111","includeInProgress":false,"saveResult":true}'
 ```
 
-參數說明：
-
 | 參數 | 型別 | 說明 |
 |---|---|---|
 | `userId` | number | 要審核的學生 ID |
@@ -381,23 +361,16 @@ curl -X POST http://localhost:3001/api/audit/run \
 | `includeInProgress` | boolean | 是否將修課中課程納入預估結果 |
 | `saveResult` | boolean | 是否將審核結果儲存至 `audit_results` |
 
----
-
 ### 查詢審核歷史
 
 ```http
 GET /api/audit/history?userId=1&limit=20
 ```
-
----
-
 ### 查詢待確認課程
 
 ```http
 GET /api/student-courses/unresolved?userId=1
 ```
-
----
 
 ### 建立人工調整
 
@@ -410,9 +383,6 @@ POST /api/admin/manual-courses
 ```text
 讓管理員新增人工認列、抵免或核准替代課程。
 ```
-
----
-
 ## 前端頁面
 
 ### 學生端
@@ -436,8 +406,6 @@ POST /api/admin/manual-courses
 | `/admin/courses` | 管理課程資料 |
 | `/admin/requirements` | 管理畢業規則 |
 | `/admin/audit-history` | 查看審核紀錄 |
-
----
 
 ## 測試與驗證
 
@@ -477,8 +445,6 @@ curl 'http://localhost:3001/api/curriculums/113/requirements'
 k6 run performance/k6-audit-test.js
 ```
 
----
-
 ## 專案啟動指令總覽
 
 | 任務 | 指令 |
@@ -494,4 +460,8 @@ k6 run performance/k6-audit-test.js
 | 前端測試 | `cd frontend && npm test` |
 | 前端 build | `cd frontend && npm run build` |
 | 壓力測試 | `k6 run performance/k6-audit-test.js` |
+
+## Licence
+
+- 本專案為課程期末專案，僅供學術展示與學習使用。
 
