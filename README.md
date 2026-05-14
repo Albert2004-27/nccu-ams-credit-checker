@@ -1,7 +1,7 @@
-# 🫎 NCCUDARS— Personal Degree Audit Reporting System
+# 🫎 NCCUDARS — Degree Audit Reporting System
 
 <p align="center">
-    <img src="./docs/assets/nccudars-logo.png" alt="NCCUDARS Logo" width="560">
+    <img src="nccudars-logo.png" alt="NCCUDARS Logo" width="560">
 </p>
 
 
