@@ -267,7 +267,7 @@ https://xxxx.trycloudflare.com
 
 - 這是免費 quick tunnel，不保證永久有效。
 - 每次重開 tunnel，網址可能會換。
-- 你的電腦、Docker、Vite、cloudflared 都要保持開著。
+- 電腦、Docker、Vite、cloudflared 都要保持開著。
 
 ## 常用 API
 
@@ -286,7 +286,7 @@ POST /api/transcripts/import
 用途：
 
 ```text
-把 NCCU JSON 成績資料匯入資料庫，建立 transcript_imports 與 student_courses。
+把 iNCCU全人系統成績資料JSON檔 匯入資料庫，建立 transcript_imports 與 student_courses。
 ```
 
 ### 執行畢業審核
