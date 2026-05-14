@@ -82,43 +82,7 @@ http://localhost:3001/api/...
 http://localhost:3001
 ```
 
-這樣外部使用者只需要打開一個網址，不會遇到「外部瀏覽器連不到你本機 localhost:3001」的問題。
-
 ## 系統流程圖
-
-### Docker 啟動流程
-
-```mermaid
-flowchart TD
-  A[執行 docker compose up --build] --> B[啟動 MySQL 8 container]
-  B --> C{MySQL healthcheck 通過?}
-  C -->|否| B
-  C -->|是| D[啟動 backend container]
-  D --> E[backend npm run migrate]
-  E --> F[建立/更新資料表]
-  F --> G[backend npm run start]
-  G --> H[Express API 監聽 3001]
-```
-
-### 前端到後端的 API 流程
-
-```mermaid
-flowchart TD
-  A[React 前端頁面] --> B[api hooks]
-  B --> C[apiClient fetch]
-  C --> D[Express Routes]
-  D --> E[Controller]
-  E --> F[Service / Audit Engine]
-  F --> G[Sequelize Model]
-  G --> H[MySQL]
-  H --> G
-  G --> F
-  F --> E
-  E --> D
-  D --> C
-  C --> B
-  B --> A[畫面更新]
-```
 
 ### 從匯入 JSON 到畢業審核
 
@@ -164,8 +128,7 @@ flowchart TD
 目前系統採用 128 學分結構：
 
 ```text
-畢業門檻 128 學分
-= 系必修 51 學分 + 體育必修 4 學分 + 通識 28 學分 + 其他選修 45 學分
+畢業門檻 128 學分 = 系必修 51 學分 + 體育必修 4 學分 + 通識 28 學分 + 其他選修 45 學分
 ```
 
 通識規則包含：
