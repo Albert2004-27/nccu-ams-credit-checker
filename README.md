@@ -9,7 +9,7 @@
 - 後端：Express API + Sequelize + MySQL，負責資料匯入、規則計算、審核結果儲存。
 - 前端：React + Vite + TypeScript + Tailwind CSS，負責操作介面與結果呈現。
 
-> Note. 目前登入/註冊是前端展示流程，還不是正式帳號認證系統。後續會再補後端 auth、JWT/session、角色權限檢查。
+> 注意：目前登入/註冊是前端展示流程，不是正式帳號認證系統，請勿輕易上傳個人成績單上去，以免個資洩漏。本團隊未來會再補後端 auth、JWT/session、角色權限檢查。
 
 ## 技術架構
 
