@@ -1,5 +1,4 @@
-# NCCU Mathematical Sciences Undergraduate Degree Audit System  
-## Academic Years 111–114
+# 111-114 NCCU Mathematical Sciences Undergraduate Degree Audit System  
 
 This repository is the final project for the **114-2 Database Systems** course.
 
