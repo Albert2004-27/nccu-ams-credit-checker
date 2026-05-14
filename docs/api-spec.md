@@ -150,8 +150,8 @@ Response:
 {
   "importId": 1,
   "userId": 1,
-  "studentNumber": "111302013",
-  "studentName": "吳少華",
+  "studentNumber": "DEMO001",
+  "studentName": "示範使用者",
   "coursePlanYear": "111",
   "importedCourses": 71,
   "passedCourses": 59,

@@ -72,8 +72,8 @@ The current workbook has 517 general-education definitions. The backend stores o
 It also creates the demo user:
 
 ```text
-student_number: 111302013
-name: 吳少華
+student_number: DEMO001
+name: 示範使用者
 admission_year: 111
 ```
 

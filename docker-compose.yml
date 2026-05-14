@@ -3,14 +3,14 @@ services:
     image: mysql:8
     container_name: nccu-ams-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: nccu_credit_checker
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -30,8 +30,8 @@ services:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: nccu_credit_checker
-      DB_USER: root
-      DB_PASSWORD: root
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_LOGGING: "false"
 
 volumes:

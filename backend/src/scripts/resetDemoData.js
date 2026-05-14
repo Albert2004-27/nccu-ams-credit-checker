@@ -10,7 +10,7 @@ const {
 const { importTranscript } = require("../importers/transcriptImport.service");
 const { resolveDataFile } = require("../utils/paths");
 
-const DEMO_STUDENT_NUMBER = "111302013";
+const DEMO_STUDENT_NUMBER = "DEMO001";
 const K6_STUDENT_NUMBER = "K6DEMO001";
 
 async function upsertUser({ studentNumber, name, email, admissionYear }) {
@@ -42,7 +42,7 @@ async function main() {
 
   const demoUser = await upsertUser({
     studentNumber: DEMO_STUDENT_NUMBER,
-    name: "吳少華",
+    name: "示範使用者",
     email: "demo@nccu.edu.tw",
     admissionYear: 111
   });
