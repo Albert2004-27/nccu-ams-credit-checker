@@ -79,16 +79,12 @@ http://localhost:3001/api/...
 ```text
 http://localhost:3001
 ```
-
 ## 系統流程圖
 
-## 從匯入 JSON 到畢業審核流程
+本系統流程分成兩部分：  
+一是學生上傳 transcript JSON 後執行畢業審核；二是管理員針對無法自動認列的課程進行人工調整。
 
-本系統的審核流程分成三個主要階段：
-
-1. 匯入 Transcript JSON：學生上傳 NCCU transcript JSON，後端解析學生基本資料、修課計畫與成績紀錄。
-2. 執行畢業審核：系統載入課程資料與畢業規則，依序檢查必修、體育、通識與其他選修。
-3. 回傳與儲存結果：審核結果會回傳前端顯示；若 `saveResult=true`，則同步寫入資料庫保存。
+### 從 Transcript JSON 到畢業審核
 
 ```mermaid
 %%{init: {
@@ -104,92 +100,64 @@ http://localhost:3001
   }
 }}%%
 
-flowchart TD
+flowchart LR
+  A["Transcript<br/>JSON"] --> B["Import API<br/>POST /api/transcripts/import"]
+  B --> C["Parse<br/>學生資料 / 修課紀錄"]
+  C --> D[("Database<br/>transcript_imports<br/>student_courses")]
+  D --> E["Run Audit<br/>POST /api/audit/run"]
+  E --> F["Rule Engine<br/>必修 / 體育 / 通識 / 選修"]
+  F --> G["Audit Result"]
+  G --> H["Frontend<br/>顯示結果"]
+  G --> I{"saveResult?"}
+  I -->|true| J[("Database<br/>audit_results")]
+  I -->|false| K["Return Only"]
 
-  %% =========================
-  %% Stage 1: Import Transcript
-  %% =========================
-  subgraph S1["① Transcript JSON 匯入"]
-    A["學生上傳<br/>NCCU transcript JSON"]
-    B["POST<br/>/api/transcripts/import"]
-    C["解析 JSON<br/>aboutMe / coursePlan / gradeRecordList"]
-    D["寫入<br/>transcript_imports"]
-    E["寫入<br/>student_courses"]
-  end
+  classDef node fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;
+  classDef api fill:#f7f7f7,stroke:#111111,stroke-width:1.4px,color:#111111;
+  classDef db fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+  classDef decision fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
 
-  %% =========================
-  %% Stage 2: Run Audit
-  %% =========================
-  subgraph S2["② 畢業審核執行"]
-    F["學生按下<br/>執行審核"]
-    G["POST<br/>/api/audit/run"]
-    H["載入<br/>課程資料與畢業規則"]
-
-    I["必修檢查"]
-    J["體育檢查"]
-    K["通識檢查"]
-    L["其他選修檢查"]
-  end
-
-  %% =========================
-  %% Stage 3: Result Handling
-  %% =========================
-  subgraph S3["③ 審核結果輸出"]
-    M["產生<br/>audit result"]
-    N["回傳前端<br/>顯示審核結果"]
-    O{"saveResult = true?"}
-    P["寫入<br/>audit_results"]
-    Q["只回傳結果<br/>不儲存"]
-  end
-
-  A --> B --> C
-  C --> D
-  C --> E
-  E --> F --> G --> H
-
-  H --> I
-  H --> J
-  H --> K
-  H --> L
-
-  I --> M
-  J --> M
-  K --> M
-  L --> M
-
-  M --> N
-  M --> O
-  O -->|是| P
-  O -->|否| Q
-
-  %% =========================
-  %% Black-and-white styling
-  %% =========================
-  classDef defaultNode fill:#ffffff,stroke:#111111,stroke-width:1.5px,color:#111111;
-  classDef apiNode fill:#f7f7f7,stroke:#111111,stroke-width:1.5px,color:#111111;
-  classDef dbNode fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
-  classDef checkNode fill:#ffffff,stroke:#111111,stroke-width:1.5px,color:#111111;
-  classDef decisionNode fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
-
-  class A,C,F,H,M,N,Q defaultNode;
-  class B,G apiNode;
-  class D,E,P dbNode;
-  class I,J,K,L checkNode;
-  class O decisionNode;
+  class A,C,F,G,H,K node;
+  class B,E api;
+  class D,J db;
+  class I decision;
 ```
 
 ### 管理員人工調整流程
 
 ```mermaid
-flowchart TD
-  A[管理員查看待確認課程] --> B[GET /api/student-courses/unresolved]
-  B --> C{課程是否可人工認列?}
-  C -->|否| D[保留未採計或備註]
-  C -->|是| E[帶入人工調整表單]
-  E --> F[POST /api/admin/manual-courses]
-  F --> G[建立 MANUAL student_course row]
-  G --> H[重新執行畢業審核]
-  H --> I[查看審核結果是否改善]
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#111111",
+    "lineColor": "#111111",
+    "secondaryColor": "#f7f7f7",
+    "tertiaryColor": "#ffffff",
+    "fontFamily": "Arial, sans-serif"
+  }
+}}%%
+
+flowchart LR
+  A["Unresolved Courses<br/>GET /api/student-courses/unresolved"]
+  A --> B{"可人工認列?"}
+  B -->|否| C["標記未採計<br/>或補充備註"]
+  B -->|是| D["Manual Form"]
+  D --> E["Create Manual Course<br/>POST /api/admin/manual-courses"]
+  E --> F[("Database<br/>MANUAL student_course")]
+  F --> G["Re-run Audit"]
+  G --> H["Review Result"]
+
+  classDef node fill:#ffffff,stroke:#111111,stroke-width:1.4px,color:#111111;
+  classDef api fill:#f7f7f7,stroke:#111111,stroke-width:1.4px,color:#111111;
+  classDef db fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+  classDef decision fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+
+  class C,D,G,H node;
+  class A,E api;
+  class F db;
+  class B decision;
 ```
 
 ## 畢業規則概要
