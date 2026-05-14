@@ -1,4 +1,14 @@
-# NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System for Academic Years 111-114
+# 🦞 OpenClaw — Personal AI Assistant
+
+<p align="center">
+    <picture>
+        <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-logo-text-dark.svg">
+        <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-logo-text.svg" alt="OpenClaw" width="500">
+    </picture>
+</p>
+
+
+## NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System for Academic Years 111-114
 
 ## Degree Audit Reporting System (DARS)
 
@@ -552,7 +562,7 @@ This project is developed as a course final project and is intended for academic
 
 ---
 
-# 111~114學年度 政大應數系 學士班畢業審核系統
+## 111~114學年度 政大應數系 學士班畢業審核系統
 
 - 此份專案為 114-2 資料庫系統期末專案
 - 此份系統可以讓學生匯入 iNCCU 下載的成績 JSON 檔案，依照畢業規則計算是否符合畢業資格。
