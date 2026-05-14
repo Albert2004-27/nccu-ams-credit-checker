@@ -82,29 +82,100 @@ http://localhost:3001
 
 ## 系統流程圖
 
-### 從匯入 JSON 到畢業審核
+## 從匯入 JSON 到畢業審核流程
+
+本系統的審核流程分成三個主要階段：
+
+1. **匯入 Transcript JSON**：學生上傳 NCCU transcript JSON，後端解析學生基本資料、修課計畫與成績紀錄。
+2. **執行畢業審核**：系統載入課程資料與畢業規則，依序檢查必修、體育、通識與其他選修。
+3. **回傳與儲存結果**：審核結果會回傳前端顯示；若 `saveResult=true`，則同步寫入資料庫保存。
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#111111",
+    "primaryBorderColor": "#111111",
+    "lineColor": "#111111",
+    "secondaryColor": "#f7f7f7",
+    "tertiaryColor": "#ffffff",
+    "fontFamily": "Arial, sans-serif"
+  }
+}}%%
+
 flowchart TD
-  A[學生上傳 NCCU transcript JSON] --> B[POST /api/transcripts/import]
-  B --> C[解析 aboutMe / coursePlan / gradeRecordList]
-  C --> D[寫入 transcript_imports]
-  C --> E[寫入 student_courses]
-  E --> F[學生按下執行審核]
-  F --> G[POST /api/audit/run]
-  G --> H[載入課程資料與畢業規則]
-  H --> I[必修檢查]
-  H --> J[體育檢查]
-  H --> K[通識檢查]
-  H --> L[其他選修檢查]
-  I --> M[產生 audit result]
+
+  %% =========================
+  %% Stage 1: Import Transcript
+  %% =========================
+  subgraph S1["① Transcript JSON 匯入"]
+    A["學生上傳<br/>NCCU transcript JSON"]
+    B["POST<br/>/api/transcripts/import"]
+    C["解析 JSON<br/>aboutMe / coursePlan / gradeRecordList"]
+    D["寫入<br/>transcript_imports"]
+    E["寫入<br/>student_courses"]
+  end
+
+  %% =========================
+  %% Stage 2: Run Audit
+  %% =========================
+  subgraph S2["② 畢業審核執行"]
+    F["學生按下<br/>執行審核"]
+    G["POST<br/>/api/audit/run"]
+    H["載入<br/>課程資料與畢業規則"]
+
+    I["必修檢查"]
+    J["體育檢查"]
+    K["通識檢查"]
+    L["其他選修檢查"]
+  end
+
+  %% =========================
+  %% Stage 3: Result Handling
+  %% =========================
+  subgraph S3["③ 審核結果輸出"]
+    M["產生<br/>audit result"]
+    N["回傳前端<br/>顯示審核結果"]
+    O{"saveResult = true?"}
+    P["寫入<br/>audit_results"]
+    Q["只回傳結果<br/>不儲存"]
+  end
+
+  A --> B --> C
+  C --> D
+  C --> E
+  E --> F --> G --> H
+
+  H --> I
+  H --> J
+  H --> K
+  H --> L
+
+  I --> M
   J --> M
   K --> M
   L --> M
-  M --> N[回傳前端顯示結果]
-  M --> O{saveResult=true?}
-  O -->|是| P[寫入 audit_results]
-  O -->|否| Q[只回傳不儲存]
+
+  M --> N
+  M --> O
+  O -->|是| P
+  O -->|否| Q
+
+  %% =========================
+  %% Black-and-white styling
+  %% =========================
+  classDef defaultNode fill:#ffffff,stroke:#111111,stroke-width:1.5px,color:#111111;
+  classDef apiNode fill:#f7f7f7,stroke:#111111,stroke-width:1.5px,color:#111111;
+  classDef dbNode fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+  classDef checkNode fill:#ffffff,stroke:#111111,stroke-width:1.5px,color:#111111;
+  classDef decisionNode fill:#ffffff,stroke:#111111,stroke-width:2px,color:#111111;
+
+  class A,C,F,H,M,N,Q defaultNode;
+  class B,G apiNode;
+  class D,E,P dbNode;
+  class I,J,K,L checkNode;
+  class O decisionNode;
 ```
 
 ### 管理員人工調整流程
