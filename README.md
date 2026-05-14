@@ -1,4 +1,4 @@
-# 111-114 NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System (DARS) 
+# 111-114 NCCU Mathematical Sciences Undergraduate Degree Audit Reporting System
 
 ## Degree Audit Reporting System (DARS)
 
