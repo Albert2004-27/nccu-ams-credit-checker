@@ -4,8 +4,6 @@
     <img src="nccudars-logo.png" alt="NCCUDARS Logo" width="560">
 </p>
 
----
-
 ## Degree Audit Reporting System (DARS)
 
 The Degree Audit Reporting System (DARS) is a computer generated report for undergraduate and associate level students that matches the requirements of a degree program with a student's course work taken. The audit identifies those graduation requirements that are completed as well as those requirements that still need to be completed.
