@@ -141,7 +141,7 @@ flowchart LR
 
 flowchart LR
   A["Unresolved Courses<br/>GET /api/student-courses/unresolved"]
-  A --> B{"可人工認列? "}
+  A --> B{"可人工認列??"}
   B -->|否| C["標記未採計<br/>或補充備註"]
   B -->|是| D["Manual Form"]
   D --> E["Create Manual Course<br/>POST /api/admin/manual-courses"]
