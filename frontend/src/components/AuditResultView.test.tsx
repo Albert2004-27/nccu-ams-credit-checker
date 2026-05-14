@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { AuditResultView } from "./AuditResultView";
 import type { AuditResult } from "../types/api";
 
@@ -82,6 +82,10 @@ const baseResult: AuditResult = {
   ]
 };
 
+afterEach(() => {
+  cleanup();
+});
+
 describe("AuditResultView", () => {
   it("shows general education official names, credit ranges, and completed core courses", () => {
     render(<AuditResultView result={baseResult} />);
@@ -120,7 +124,7 @@ describe("AuditResultView", () => {
     expect(screen.getAllByText("94.55").length).toBeGreaterThan(0);
   });
 
-  it("shows every missing required course in action required", () => {
+  it("keeps action required compact until the user expands missing courses", () => {
     const incompleteResult: AuditResult = {
       ...baseResult,
       graduationEligible: false,
@@ -163,12 +167,63 @@ describe("AuditResultView", () => {
     };
 
     render(<AuditResultView result={incompleteResult} />);
+    const actionPanel = screen.getByText("待處理事項").closest("section") as HTMLElement;
 
-    expect(screen.getByText("缺少：微積分（上學期）")).toBeInTheDocument();
-    expect(screen.getByText("缺少：微積分（下學期）")).toBeInTheDocument();
-    expect(screen.getByText("缺少：計算機程式")).toBeInTheDocument();
-    expect(screen.getByText("缺少：離散數學")).toBeInTheDocument();
-    expect(screen.getByText("缺少：高等微積分（上學期）")).toBeInTheDocument();
-    expect(screen.getByText("有 2 門課不可採計")).toBeInTheDocument();
+    expect(screen.getByText("缺少必修項目")).toBeInTheDocument();
+    expect(screen.getByText("全類別共有 2 門課程不予採計")).toBeInTheDocument();
+    expect(within(actionPanel).queryByText("微積分（上學期）")).not.toBeInTheDocument();
+    expect(within(actionPanel).queryByText("人工智慧方法與工具")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /缺少必修項目/ }));
+
+    expect(within(actionPanel).getByText("微積分（上學期）")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("微積分（下學期）")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("計算機程式")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("離散數學")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("高等微積分（上學期）")).toBeInTheDocument();
+  });
+
+  it("labels uncounted courses as cross-category totals and group-specific details", () => {
+    const result: AuditResult = {
+      ...baseResult,
+      graduationEligible: false,
+      groups: [
+        {
+          groupCode: "GENERAL",
+          groupName: "通識",
+          status: "COMPLETE",
+          earnedCredits: 28,
+          requiredCredits: 28,
+          missingCredits: 0,
+          uncountedCourses: [
+            { courseName: "通識超修課程", credits: 2, reason: "通識超修部分不得採計" }
+          ]
+        },
+        {
+          groupCode: "ELECTIVE",
+          groupName: "其他選修",
+          status: "COMPLETE",
+          earnedCredits: 45,
+          requiredCredits: 45,
+          missingCredits: 0,
+          uncountedCourses: [
+            { courseName: "統計機器學習", credits: 3, reason: "其他選修超過 45 學分，不採計為畢業學分" },
+            { courseName: "演算法", credits: 3, reason: "其他選修超過 45 學分，不採計為畢業學分" }
+          ]
+        }
+      ]
+    };
+
+    render(<AuditResultView result={result} />);
+    const actionPanel = screen.getByText("待處理事項").closest("section") as HTMLElement;
+
+    expect(screen.getByText("全類別共有 3 門課程不予採計")).toBeInTheDocument();
+    expect(screen.getByText("本群組未採計課程")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /全類別共有 3 門課程不予採計/ }));
+
+    expect(within(actionPanel).getByText("通識課程")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("其他選修")).toBeInTheDocument();
+    expect(within(actionPanel).getByText("統計機器學習")).toBeInTheDocument();
   });
 });

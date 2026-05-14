@@ -1,4 +1,4 @@
-import { AlertTriangle, Award, BookOpenCheck, CheckCircle2, Clock3, FileWarning, GraduationCap, Layers3, Medal, Sparkles, Trophy } from "lucide-react";
+import { AlertTriangle, Award, BookOpenCheck, CheckCircle2, ChevronDown, Clock3, FileWarning, GraduationCap, Layers3, Medal, Sparkles, Trophy } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { formatCredits } from "../lib/status";
 import type { StudentAcademicProfile } from "../lib/transcriptProfile";
@@ -134,37 +134,37 @@ function ResultHero({ result, studentProfile }: { result: AuditResult; studentPr
           <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full ${eligible ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-600"}`}>
             <StatusIcon className="h-9 w-9" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Graduation Audit</p>
-            <h2 className="mt-2 font-serif text-2xl font-bold text-navy-950 md:text-3xl">
+            <h2 className="mt-2 truncate font-serif text-2xl font-bold text-navy-950 md:text-3xl">
               {studentName}畢業檢核結果：<span className={statusColor}>{eligible ? "已完成" : "尚未完成"}</span>
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-slate-600">
-              <span>目前採計 {formatCredits(result.totalCredits.earned)} / {formatCredits(result.totalCredits.required)} 學分</span>
-              <span className="text-orange-600">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
-              <span>規則版本：{result.academicYear} 學年度 / {result.department}</span>
-              <span className="inline-flex items-center gap-1"><Clock3 className="h-4 w-4" />模式 {result.mode}</span>
+              <span className="whitespace-nowrap">目前採計 {formatCredits(result.totalCredits.earned)} / {formatCredits(result.totalCredits.required)} 學分</span>
+              <span className="whitespace-nowrap text-orange-600">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
+              <span className="whitespace-nowrap text-xs opacity-70">規則：{result.academicYear} 學年度 / {result.department}</span>
+              <span className="inline-flex items-center gap-1 whitespace-nowrap"><Clock3 className="h-4 w-4" />模式 {result.mode}</span>
             </div>
           </div>
         </div>
-        <div className="grid min-w-[320px] gap-3 sm:grid-cols-3">
-          <HeroInfoCard icon={<GraduationCap className="h-5 w-5" />} label="主修" value={studentProfile?.major || result.department} />
-          <HeroInfoCard icon={<Award className="h-5 w-5" />} label="成績 Ranking" value={studentProfile ? formatRanking(studentProfile) || "JSON 未提供" : "JSON 未提供"} />
-          <HeroInfoCard icon={<Sparkles className="h-5 w-5" />} label="平均成績" value={studentProfile?.averageScore || "JSON 未提供"} />
+        <div className="flex flex-wrap gap-3 xl:flex-nowrap">
+          <HeroInfoCard icon={<GraduationCap className="h-4 w-4" />} label="主修" value={studentProfile?.major || result.department} />
+          <HeroInfoCard icon={<Award className="h-4 w-4" />} label="成績 Ranking" value={studentProfile ? formatRanking(studentProfile) || "—" : "—"} wide />
+          <HeroInfoCard icon={<Sparkles className="h-4 w-4" />} label="平均成績" value={studentProfile?.averageScore || "—"} />
         </div>
       </div>
     </section>
   );
 }
 
-function HeroInfoCard({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function HeroInfoCard({ icon, label, value, wide = false }: { icon: ReactNode; label: string; value: string; wide?: boolean }) {
   return (
-    <div className="rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-lg shadow-blue-950/5 backdrop-blur">
+    <div className={`rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-lg shadow-blue-950/5 backdrop-blur ${wide ? "min-w-[160px]" : "min-w-[110px] flex-1"}`}>
       <div className="mb-2 inline-flex rounded-xl bg-blue-50 p-2 text-navy-800">
         {icon}
       </div>
-      <p className="text-xs font-bold tracking-[0.16em] text-slate-400">{label}</p>
-      <p className="mt-1 font-bold text-navy-950">{value}</p>
+      <p className="text-[10px] font-bold tracking-[0.16em] text-slate-400 uppercase">{label}</p>
+      <p className="mt-1 whitespace-nowrap text-sm font-black text-navy-950">{value}</p>
     </div>
   );
 }
@@ -188,23 +188,26 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className={`rounded-2xl bg-gradient-to-br p-3 shadow-lg ${toneClass}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-3">
+          <div className={`shrink-0 rounded-2xl bg-gradient-to-br p-2.5 shadow-lg ${toneClass}`}>
             {icon}
           </div>
-          <div>
-            <p className="font-bold text-navy-950">{title}</p>
-            <p className="mt-1 text-2xl font-black text-navy-950">{formatCredits(earned)} / {formatCredits(required)} <span className="text-base font-semibold text-slate-500">學分</span></p>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-navy-950">{title}</p>
+            <p className="mt-1 whitespace-nowrap text-lg font-black text-navy-950">
+              {formatCredits(earned)} / {formatCredits(required)} 
+              <span className="ml-1 text-xs font-bold text-slate-400">學分</span>
+            </p>
           </div>
         </div>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${isComplete ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${isComplete ? "bg-emerald-50 text-emerald-600" : "bg-orange-50 text-orange-600"}`}>
           {statusText(isComplete)}
         </span>
       </div>
       <div className="mt-4">
         <ThinProgressBar percent={progress} tone={tone} />
-        <p className="mt-1 text-right text-xs font-bold text-navy-800">{displayPercent(progress)}</p>
+        <p className="mt-1 text-right text-[10px] font-black text-navy-800">{displayPercent(progress)}</p>
       </div>
     </section>
   );
@@ -213,13 +216,10 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
 function GraduationRing({ progress, eligible }: { progress: number; eligible: boolean }) {
   const safeProgress = Math.min(100, Math.max(0, progress));
   return (
-    <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(#1f5fd0 ${safeProgress * 3.6}deg, #e2e8f0 0deg)` }}>
-      <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white text-center shadow-lg shadow-blue-950/10">
-        <p className="text-3xl font-black text-navy-950">{displayPercent(safeProgress)}</p>
+    <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(#1f5fd0 ${safeProgress * 3.6}deg, #e2e8f0 0deg)` }}>
+      <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white text-center shadow-lg shadow-blue-950/10">
+        <p className="text-2xl font-black text-navy-950">{displayPercent(safeProgress)}</p>
         <p className="mt-1 text-xs font-bold tracking-[0.16em] text-slate-400">總進度</p>
-        <span className={`mt-2 rounded-full px-3 py-1 text-xs font-bold ${eligible ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}>
-          {eligible ? "已完成" : "尚未完成"}
-        </span>
       </div>
     </div>
   );
@@ -234,98 +234,229 @@ function GraduationProgressPanel({ result }: { result: AuditResult }) {
   ].filter((row) => row.group || row.required > 0);
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
-      <div className="mb-5 flex flex-wrap items-center gap-2">
+    <section className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         <h3 className="font-serif text-xl font-bold text-navy-950">畢業進度</h3>
         <span className="text-sm font-medium text-slate-500">Graduation Progress</span>
       </div>
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
-        <GraduationRing progress={result.progressPercentage} eligible={result.graduationEligible} />
-        <div className="space-y-3">
-          {rows.map((row) => {
-            const earned = Number(row.group?.earnedCredits || 0);
-            const required = Number(row.group?.requiredCredits || row.required || 0);
-            const percent = required ? percentOf(earned, required) : 0;
-            return (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3" key={row.label}>
-                <div className="mb-2 flex items-center justify-between gap-4">
-                  <p className="whitespace-nowrap font-bold text-navy-950">{row.label}</p>
-                  <p className="whitespace-nowrap text-sm font-bold text-slate-600">
-                    {formatCredits(earned)} / {formatCredits(required)}
-                    <span className="ml-3 text-navy-900">{required ? displayPercent(percent) : "—"}</span>
-                  </p>
+      <div className="flex flex-1 flex-col justify-center">
+        <div className="grid gap-5 lg:grid-cols-[170px_1fr] lg:items-center">
+          <GraduationRing progress={result.progressPercentage} eligible={result.graduationEligible} />
+          <div className="space-y-2.5">
+            {rows.map((row) => {
+              const earned = Number(row.group?.earnedCredits || 0);
+              const required = Number(row.group?.requiredCredits || row.required || 0);
+              const percent = required ? percentOf(earned, required) : 0;
+              return (
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3" key={row.label}>
+                  <div className="mb-2 flex items-center justify-between gap-4">
+                    <p className="whitespace-nowrap font-bold text-navy-950">{row.label}</p>
+                    <p className="whitespace-nowrap text-sm font-bold text-slate-600">
+                      {formatCredits(earned)} / {formatCredits(required)}
+                      <span className="ml-3 text-navy-900">{required ? displayPercent(percent) : "—"}</span>
+                    </p>
+                  </div>
+                  <ThinProgressBar percent={percent} tone={row.tone} />
                 </div>
-                <ThinProgressBar percent={percent} tone={row.tone} />
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function ActionRequiredPanel({ result }: { result: AuditResult }) {
-  const missingItems = result.groups.flatMap((group) => (group.missingCourses || []).map((course) => ({
-    title: `缺少：${String(course.courseName || group.groupName)}`,
-    tag: group.groupName,
-    acceptedCodes: Array.isArray(course.acceptedCourseCodes) ? course.acceptedCourseCodes.join("、") : ""
-  })));
-  const uncountedCount = result.groups.reduce((sum, group) => sum + (group.uncountedCourses?.length || 0), 0);
-  const summaryItems = [
-    ...(result.totalCredits.missing > 0 ? [{ title: `尚缺 ${formatCredits(result.totalCredits.missing)} 學分`, tag: "未完成", tone: "orange" as const }] : []),
-    ...(uncountedCount > 0 ? [{ title: `有 ${uncountedCount} 門課不可採計`, tag: "需留意", tone: "amber" as const }] : []),
-    ...(result.warnings.length ? [{ title: result.warnings[0], tag: "系統提醒", tone: "purple" as const }] : [])
-  ];
-  const hasItems = missingItems.length || summaryItems.length;
-  const toneClass = {
-    orange: "border-orange-100 bg-orange-50 text-orange-700",
-    amber: "border-amber-100 bg-amber-50 text-amber-700",
-    purple: "border-violet-100 bg-violet-50 text-violet-700"
+function ActionRequiredItem({ 
+  title, 
+  tag, 
+  icon: Icon, 
+  tone, 
+  children,
+  count
+}: { 
+  title: string; 
+  tag: string; 
+  icon: any; 
+  tone: "red" | "orange" | "amber" | "purple";
+  children?: React.ReactNode;
+  count?: number;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasContent = !!children;
+  
+  const toneClasses = {
+    red: "border-red-100 bg-red-50/50 text-red-700 hover:bg-red-50",
+    orange: "border-orange-100 bg-orange-50/50 text-orange-700 hover:bg-orange-50",
+    amber: "border-amber-100 bg-amber-50/50 text-amber-700 hover:bg-amber-50",
+    purple: "border-purple-100 bg-purple-50/50 text-purple-700 hover:bg-purple-50"
   };
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <h3 className="font-serif text-xl font-bold text-navy-950">待處理事項</h3>
-          <p className="text-sm text-slate-500">Action Required</p>
+    <div className={`overflow-hidden rounded-2xl border transition-all ${toneClasses[tone]} ${isOpen ? "ring-1 ring-inset ring-current/10" : ""}`}>
+      <button 
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+        onClick={() => hasContent && setIsOpen(!isOpen)}
+        disabled={!hasContent}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`flex h-8 w-8 items-center justify-center rounded-xl bg-white/80 shadow-sm`}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="font-bold leading-tight">{title}</p>
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider opacity-60">{tag}</p>
+          </div>
         </div>
-        <FileWarning className="h-5 w-5 text-orange-500" />
-      </div>
-      {hasItems ? (
-        <div className="space-y-4">
-          {missingItems.length ? (
-            <div>
-              <div className="mb-2 flex items-center justify-between text-sm">
-                <p className="font-bold text-red-800">缺少必修項目</p>
-                <span className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700">{missingItems.length} 項</span>
-              </div>
-              <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
-                {missingItems.map((item, index) => (
-                  <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700" key={`${item.title}-${index}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-bold">{item.title}</p>
-                      <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-xs font-bold">{item.tag}</span>
-                    </div>
-                    {item.acceptedCodes ? <p className="mt-1 text-xs font-semibold text-red-500">可接受課號：{item.acceptedCodes}</p> : null}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {summaryItems.map((item, index) => (
-            <div className={`flex items-start justify-between gap-3 rounded-2xl border px-4 py-3 text-sm ${toneClass[item.tone]}`} key={`${item.title}-${index}`}>
-              <p className="font-bold">{item.title}</p>
-              <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-xs font-bold">{item.tag}</span>
-            </div>
-          ))}
+        <div className="flex items-center gap-2">
+          {count !== undefined && (
+            <span className="rounded-lg bg-white/90 px-2 py-0.5 text-xs font-black shadow-sm">{count}</span>
+          )}
+          {hasContent && (
+            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+          )}
         </div>
-      ) : (
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
-          目前沒有待處理事項
+      </button>
+      
+      {isOpen && children && (
+        <div className="border-t border-current/5 bg-white/40 p-3">
+          <div className="space-y-1.5">
+            {children}
+          </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ActionRequiredPanel({ result }: { result: AuditResult }) {
+  const missingItems = result.groups.flatMap((group) => (group.missingCourses || []).map((course) => ({
+    name: String(course.courseName || group.groupName),
+    tag: group.groupName,
+    code: Array.isArray(course.acceptedCourseCodes) ? course.acceptedCourseCodes.join("、") : ""
+  })));
+
+  const uncountedGroups = result.groups
+    .map((group) => ({
+      groupName: displayGroupName(group),
+      courses: (group.uncountedCourses || []).map((course) => ({
+        name: String(course.courseName || "未知課程"),
+        credits: String(course.credits || "0"),
+        reason: String(course.reason || "不符採計規則")
+      }))
+    }))
+    .filter((group) => group.courses.length > 0);
+  const uncountedCount = uncountedGroups.reduce((sum, group) => sum + group.courses.length, 0);
+
+  const hasMissing = missingItems.length > 0;
+  const hasUncounted = uncountedCount > 0;
+  const hasCreditsMissing = result.totalCredits.missing > 0;
+  const hasWarnings = result.warnings.length > 0;
+
+  return (
+    <section className="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm shadow-blue-950/5">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-serif text-xl font-bold text-navy-950">待處理事項</h3>
+          <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">Action Required</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-inner">
+          <AlertTriangle className="h-5 w-5" />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {hasMissing && (
+          <ActionRequiredItem 
+            title="缺少必修項目" 
+            tag="核心學分" 
+            icon={BookOpenCheck} 
+            tone="red" 
+            count={missingItems.length}
+          >
+            {missingItems.map((item, i) => (
+              <div key={i} className="rounded-xl bg-white/60 p-3 text-sm shadow-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-bold text-slate-800">{item.name}</p>
+                  <span className="text-[10px] font-black text-slate-400">{item.tag}</span>
+                </div>
+                {item.code && <p className="mt-1 text-xs font-medium text-slate-500">課號：{item.code}</p>}
+              </div>
+            ))}
+          </ActionRequiredItem>
+        )}
+
+        {hasCreditsMissing && (
+          <ActionRequiredItem 
+            title={`尚缺 ${formatCredits(result.totalCredits.missing)} 學分`} 
+            tag="畢業門檻" 
+            icon={Trophy} 
+            tone="orange"
+          >
+            <div className="rounded-xl bg-white/60 p-3 text-sm shadow-sm">
+              <p className="font-medium text-slate-600">
+                目前已採計 <span className="font-black text-navy-950">{formatCredits(result.totalCredits.earned)}</span> 學分，
+                距離畢業門檻還差 <span className="font-black text-orange-600">{formatCredits(result.totalCredits.missing)}</span> 學分。
+              </p>
+            </div>
+          </ActionRequiredItem>
+        )}
+
+        {hasUncounted && (
+          <ActionRequiredItem 
+            title={`全類別共有 ${uncountedCount} 門課程不予採計`} 
+            tag="學分核算" 
+            icon={FileWarning} 
+            tone="amber"
+            count={uncountedCount}
+          >
+            {uncountedGroups.map((group) => (
+              <div key={group.groupName} className="rounded-xl bg-white/50 p-2 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                  <p className="text-xs font-black text-slate-500">{group.groupName}</p>
+                  <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700">{group.courses.length} 門</span>
+                </div>
+                <div className="space-y-1.5">
+                  {group.courses.map((course, i) => (
+                    <div key={`${group.groupName}-${course.name}-${i}`} className="rounded-lg bg-white/70 p-3 text-sm">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-slate-800">{course.name}</p>
+                        <span className="text-[10px] font-black text-amber-600">{course.credits} 學分</span>
+                      </div>
+                      <p className="mt-1 text-xs font-medium text-slate-400">原因：{course.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </ActionRequiredItem>
+        )}
+
+        {hasWarnings && (
+          <ActionRequiredItem 
+            title="系統提醒事項" 
+            tag="重要說明" 
+            icon={AlertTriangle} 
+            tone="purple"
+          >
+            {result.warnings.map((warning, i) => (
+              <div key={i} className="rounded-xl bg-white/60 p-3 text-sm shadow-sm">
+                <p className="font-medium leading-relaxed text-slate-600">{warning}</p>
+              </div>
+            ))}
+          </ActionRequiredItem>
+        )}
+
+        {!hasMissing && !hasCreditsMissing && !hasUncounted && !hasWarnings && (
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 py-10 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <p className="font-serif text-lg font-bold text-navy-950">完美狀態</p>
+            <p className="text-sm font-medium text-slate-400">目前沒有需要處理的事項</p>
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -418,7 +549,7 @@ function GroupPanel({ group }: { group: AuditGroup }) {
       ) : null}
       {group.uncountedCourses?.length ? (
         <div className="mt-4">
-          <p className="mb-2 text-sm font-semibold text-amber-700">未採計課程</p>
+          <p className="mb-2 text-sm font-semibold text-amber-700">本群組未採計課程</p>
           <CompactRows rows={group.uncountedCourses} keys={["courseCode", "courseName", "credits", "reason"]} />
         </div>
       ) : null}
