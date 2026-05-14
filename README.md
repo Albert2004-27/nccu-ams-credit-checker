@@ -33,7 +33,7 @@ The current system focuses on the following modules:
 > Please do **not** upload real personal transcripts or sensitive academic records to the demo system.  
 > Future improvements will include backend authentication, JWT/session management, role-based access control, and stricter authorization checks.
 
----
+
 
 ## Technology Stack
 
@@ -44,7 +44,7 @@ Database:   MySQL
 Container:  Docker Compose
 ```
 
----
+
 
 ## Project Structure
 
@@ -60,7 +60,7 @@ Container:  Docker Compose
 └── README.md
 ```
 
----
+
 
 ## Frontend–Backend Integration
 
@@ -107,7 +107,7 @@ These requests are then proxied by the Vite development server to:
 http://localhost:3001
 ```
 
----
+
 
 ## System Workflow
 
@@ -116,7 +116,7 @@ The system consists of two major workflows:
 1. Students upload transcript JSON files downloaded from iNCCU and run a graduation audit.
 2. Administrators review courses that cannot be automatically classified and create manual adjustments.
 
----
+
 
 ### Transcript JSON to Degree Audit
 
@@ -157,7 +157,7 @@ flowchart LR
   class I decision;
 ```
 
----
+
 
 ### Administrative Manual Adjustment Workflow
 
@@ -196,7 +196,7 @@ flowchart LR
   class B decision;
 ```
 
----
+
 
 ## Graduation Requirement Model
 
@@ -205,14 +205,14 @@ The current system adopts a **128-credit graduation structure** and evaluates cr
 ### Credit Structure
 
 | Category | Credits | Description |
-|---|---:|---|
+||:||
 | Department Required Courses | 51 | Evaluated according to the NCCU Applied Mathematics undergraduate curriculum |
 | Required Physical Education | 4 | Checks whether the required PE credits have been completed |
 | General Education | 28 | Evaluates language, core, humanities, social science, natural science, information literacy, and college-level requirements |
 | Other Electives | 45 | Remaining countable credits after required courses, PE, and general education credits |
 | **Total** | **128** | Minimum graduation credit requirement |
 
----
+
 
 ### General Education Requirements
 
@@ -231,18 +231,18 @@ Core General Education
 
 For **Core General Education**, the system explicitly lists the core-domain courses that the student has passed, making it easier to verify whether the student satisfies the graduation requirement.
 
----
+
 
 ## Environment Requirements
 
 | Tool | Recommended Version |
-|---|---|
+|||
 | Docker Desktop | 4.0+ |
 | Node.js | 18.0.0+ |
 | npm | 9.0+ |
 | cloudflared | Optional; only required for Cloudflare Tunnel demos |
 
----
+
 
 ## Quick Start
 
@@ -256,7 +256,7 @@ Open `backend/.env` and configure the actual database username and password.
 
 Also make sure the MySQL configuration in `docker-compose.yml` is consistent with `backend/.env`.
 
----
+
 
 ### 2. Start Backend and MySQL
 
@@ -291,7 +291,7 @@ Expected response:
 {"status":"ok"}
 ```
 
----
+
 
 ### 3. Seed Initial Data
 
@@ -309,7 +309,7 @@ To reset demo data:
 docker compose exec backend npm run reset:demo
 ```
 
----
+
 
 ### 4. Start the Frontend
 
@@ -324,11 +324,11 @@ npm run dev
 The services will be available at:
 
 | Service | URL |
-|---|---|
+|||
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:3001` |
 
----
+
 
 ## Free Online Demo with Cloudflare Tunnel
 
@@ -336,7 +336,7 @@ This project supports Cloudflare Tunnel for exposing the locally running system 
 
 This is useful for course presentations, demos, and remote testing.
 
----
+
 
 ### 1. Ensure the Backend Is Running
 
@@ -345,7 +345,7 @@ docker compose up -d
 curl http://localhost:3001/api/health
 ```
 
----
+
 
 ### 2. Start the Frontend in Tunnel Mode
 
@@ -354,7 +354,7 @@ cd frontend
 npm run dev -- --mode tunnel --host 0.0.0.0
 ```
 
----
+
 
 ### 3. Start Cloudflare Tunnel
 
@@ -380,7 +380,7 @@ https://xxxx.trycloudflare.com
 > Each tunnel restart may generate a different URL.  
 > During the demo, the local machine, Docker containers, Vite development server, and `cloudflared` process must remain running.
 
----
+
 
 ## Common API Endpoints
 
@@ -390,7 +390,7 @@ https://xxxx.trycloudflare.com
 curl http://localhost:3001/api/health
 ```
 
----
+
 
 ### Import Transcript JSON
 
@@ -405,7 +405,7 @@ Imports transcript data exported from iNCCU,
 then creates records in transcript_imports and student_courses.
 ```
 
----
+
 
 ### Run Degree Audit
 
@@ -416,13 +416,13 @@ curl -X POST http://localhost:3001/api/audit/run \
 ```
 
 | Parameter | Type | Description |
-|---|---|---|
+||||
 | `userId` | number | Student user ID to audit |
 | `academicYear` | string | Applicable academic year, for example `111` |
 | `includeInProgress` | boolean | Whether to include currently enrolled courses in the projected result |
 | `saveResult` | boolean | Whether to persist the audit result into `audit_results` |
 
----
+
 
 ### Query Audit History
 
@@ -430,7 +430,7 @@ curl -X POST http://localhost:3001/api/audit/run \
 GET /api/audit/history?userId=1&limit=20
 ```
 
----
+
 
 ### Query Unresolved Courses
 
@@ -438,7 +438,7 @@ GET /api/audit/history?userId=1&limit=20
 GET /api/student-courses/unresolved?userId=1
 ```
 
----
+
 
 ### Create Manual Course Adjustment
 
@@ -453,14 +453,14 @@ Allows administrators to create manually recognized, waived, transferred,
 or approved substitute course records.
 ```
 
----
+
 
 ## Frontend Routes
 
 ### Student Portal
 
 | Route | Description |
-|---|---|
+|||
 | `/student` | Student dashboard |
 | `/student/import` | Import transcript JSON |
 | `/student/courses` | View imported courses |
@@ -468,12 +468,12 @@ or approved substitute course records.
 | `/student/audit/result` | View audit result |
 | `/student/audit/history` | View audit history |
 
----
+
 
 ### Admin Portal
 
 | Route | Description |
-|---|---|
+|||
 | `/admin` | Admin dashboard |
 | `/admin/unresolved` | Review unresolved courses |
 | `/admin/manual-courses` | Create manual course adjustments |
@@ -481,7 +481,7 @@ or approved substitute course records.
 | `/admin/requirements` | Manage graduation requirements |
 | `/admin/audit-history` | View audit records |
 
----
+
 
 ## Testing and Validation
 
@@ -492,7 +492,7 @@ cd backend
 npm test
 ```
 
----
+
 
 ### Frontend Tests
 
@@ -501,7 +501,7 @@ cd frontend
 npm test
 ```
 
----
+
 
 ### Frontend Production Build
 
@@ -510,7 +510,7 @@ cd frontend
 npm run build
 ```
 
----
+
 
 ### Docker and API Checks
 
@@ -521,7 +521,7 @@ curl 'http://localhost:3001/api/courses?year=111&limit=3'
 curl 'http://localhost:3001/api/curriculums/113/requirements'
 ```
 
----
+
 
 ### Load Testing
 
@@ -529,12 +529,12 @@ curl 'http://localhost:3001/api/curriculums/113/requirements'
 k6 run performance/k6-audit-test.js
 ```
 
----
+
 
 ## Command Reference
 
 | Task | Command |
-|---|---|
+|||
 | Start Docker services | `docker compose up -d --build` |
 | Check container status | `docker compose ps` |
 | Seed course data | `docker compose exec backend npm run seed` |
@@ -547,12 +547,11 @@ k6 run performance/k6-audit-test.js
 | Build frontend | `cd frontend && npm run build` |
 | Run load test | `k6 run performance/k6-audit-test.js` |
 
----
 
 ## License
 
 This project is developed as a course final project and is intended for academic demonstration and learning purposes only.
----
+
 
 # 111~114學年度 政大應數系 學士班畢業審核系統
 
@@ -723,7 +722,7 @@ flowchart LR
 ### 學分結構
 
 | 類別 | 學分數 | 說明 |
-|---|---:|---|
+||:||
 | 系必修 | 51 | 依政大應數系學士班課程規則檢核 |
 | 體育必修 | 4 | 檢查體育必修學分是否完成 |
 | 通識 | 28 | 檢查語文、核心、自然、社會、人文等通識要求 |
@@ -750,7 +749,7 @@ flowchart LR
 ## 環境需求
 
 | 工具 | 建議版本 |
-|---|---|
+|||
 | Docker Desktop | 4.0+ |
 | Node.js | 18.0.0+ |
 | npm | 9.0+ |
@@ -830,7 +829,7 @@ npm run dev
 啟動後可開啟：
 
 | 服務 | URL |
-|---|---|
+|||
 | Frontend | `http://localhost:5173` |
 | Backend API | `http://localhost:3001` |
 
@@ -904,7 +903,7 @@ curl -X POST http://localhost:3001/api/audit/run \
 ```
 
 | 參數 | 型別 | 說明 |
-|---|---|---|
+||||
 | `userId` | number | 要審核的學生 ID |
 | `academicYear` | string | 適用學年度，例如 `111` |
 | `includeInProgress` | boolean | 是否將修課中課程納入預估結果 |
@@ -937,7 +936,7 @@ POST /api/admin/manual-courses
 ### 學生端
 
 | 頁面 | 說明 |
-|---|---|
+|||
 | `/student` | 學生首頁 |
 | `/student/import` | 匯入 transcript JSON |
 | `/student/courses` | 查看已匯入課程 |
@@ -948,7 +947,7 @@ POST /api/admin/manual-courses
 ### 管理員端
 
 | 頁面 | 說明 |
-|---|---|
+|||
 | `/admin` | 管理員首頁 |
 | `/admin/unresolved` | 查看待確認課程 |
 | `/admin/manual-courses` | 建立人工調整課程 |
@@ -997,7 +996,7 @@ k6 run performance/k6-audit-test.js
 ## 專案啟動指令總覽
 
 | 任務 | 指令 |
-|---|---|
+|||
 | 啟動 Docker services | `docker compose up -d --build` |
 | 查看 container 狀態 | `docker compose ps` |
 | 匯入基礎課程資料 | `docker compose exec backend npm run seed` |
@@ -1014,4 +1013,4 @@ k6 run performance/k6-audit-test.js
 
 - 本專案為課程期末專案，僅供學術展示與學習使用。
 
----
+
