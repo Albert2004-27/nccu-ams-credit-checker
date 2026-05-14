@@ -1,16 +1,7 @@
-"""
-將 pre-data/courses.xlsx 轉換成英文欄位版本：
-  - dept      : 由 修課年級 清理而來（去除年級/班別後綴，展開已知縮寫）
-  - category  : lmtKind（限修條件）非空時取之，否則取 subKind（必/選修）
-  - general_courses : category 屬通識/跨領域 → 去重 course_code → is_core
-
-輸出: ~/Downloads/nccu-ams-credit-checker 3/data/courses.xlsx
-"""
-
 import pandas as pd
 from pathlib import Path
 
-# ── 路徑 ────────────────────────────────────────────────────────────────────
+# 路徑
 SRC_PRE = Path(__file__).parent / "courses.xlsx"
 DST     = Path(__file__).parent.parent / "courses.xlsx"
 
@@ -24,22 +15,22 @@ GENERAL_CATS = {
     "跨領域(社會、自然、資訊)",
 }
 
-# ── 讀取資料 ────────────────────────────────────────────────────────────────
+# 讀取資料
 print("讀取 pre-data …")
 pre = pd.read_excel(SRC_PRE, sheet_name="全部課程", dtype=str)
 
-# ── 基礎欄位準備 ─────────────────────────────────────────────────────────────
+# 基礎欄位準備
 pre["課號_padded"] = pre["課號"].str.zfill(9)
 pre["semester"]    = pre["學年度"] + "-" + pre["學期"]
 
-# ── category：lmtKind 優先，否則 subKind ──────────────────────────────────
+# category：lmtKind 優先，否則 subKind
 def resolve_category(row):
     lmt = str(row.get("限修條件", "") or "").strip()
     if lmt and lmt not in ("nan", "None"):
         return lmt
     return str(row.get("必/選修", "") or "").strip()
 
-# ── 建立 courses sheet ───────────────────────────────────────────────────
+# 建立 courses sheet
 print("建立 courses …")
 courses = pd.DataFrame({
     "year":        pre["學年度"].astype(int),
@@ -77,7 +68,7 @@ general_dedup = (
 
 print(f"  general_courses: {len(general_dedup)} 筆")
 
-# ── 寫出 Excel ──────────────────────────────────────────────────────────────
+# 匯出 Excel
 DST.parent.mkdir(parents=True, exist_ok=True)
 print(f"\n寫出 {DST} …")
 with pd.ExcelWriter(DST, engine="openpyxl") as writer:
