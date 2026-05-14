@@ -1,6 +1,6 @@
 import { ChangeEvent, type ReactNode, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Award, BookOpen, ClipboardCheck, FileInput, GraduationCap, History, Sparkles } from "lucide-react";
+import { ArrowRight, Award, BarChart3, BookOpen, ClipboardCheck, Download, ExternalLink, FileInput, GraduationCap, History, Info, Sparkles } from "lucide-react";
 import { useAuditHistory, useImportTranscript, useRunAudit, useStudentCourses } from "../api/hooks";
 import { AuditResultView } from "../components/AuditResultView";
 import { MetricTile } from "../components/MetricTile";
@@ -8,19 +8,79 @@ import { PageHeader } from "../components/PageHeader";
 import { EmptyState, ErrorState, LoadingState } from "../components/States";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatCredits } from "../lib/status";
-import { extractStudentAcademicProfile } from "../lib/transcriptProfile";
+import { extractStudentAcademicProfile, type SemesterAcademicSummary, type StudentRanking } from "../lib/transcriptProfile";
 import { useAppState } from "../state/AppState";
 
-function StudentSummaryItem({ label, value, detail, icon }: { label: string; value: string; detail?: string; icon?: ReactNode }) {
+function StudentSummaryItem({ label, value, detail, icon, className = "" }: { label: string; value: string; detail?: string; icon?: ReactNode; className?: string }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm shadow-blue-950/5">
-      {icon ? <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-navy-800">{icon}</div> : null}
+    <div className={`flex min-w-0 items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm shadow-blue-950/5 ${className}`}>
+      {icon ? <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-navy-50 text-navy-800">{icon}</div> : null}
       <div className="min-w-0">
         <p className="text-xs font-bold tracking-[0.16em] text-slate-400">{label}</p>
-        <p className="truncate text-base font-black text-navy-950">{value}</p>
-        {detail ? <p className="truncate text-xs font-semibold text-slate-500">{detail}</p> : null}
+        <p className="mt-1 whitespace-nowrap text-lg font-black leading-tight text-navy-950 2xl:text-xl">{value}</p>
+        {detail ? <p className="mt-1 text-sm font-semibold leading-snug text-slate-500">{detail}</p> : null}
       </div>
     </div>
+  );
+}
+
+function rankingText(label: string, value?: string, percent?: string) {
+  if (!value) return undefined;
+  return percent ? `${label} ${value}（前 ${percent}）` : `${label} ${value}`;
+}
+
+function semesterLabel(summary: SemesterAcademicSummary) {
+  return `${summary.academicYear}-${summary.semester}`;
+}
+
+function InfoTip({ label, text }: { label: string; text: string }) {
+  return (
+    <span className="group relative inline-flex align-middle">
+      <button
+        aria-label={label}
+        className="ml-2 grid h-5 w-5 place-items-center rounded-full border border-navy-200 bg-blue-50 text-[11px] font-black text-navy-800"
+        title={text}
+        type="button"
+      >
+        <Info className="h-3.5 w-3.5" />
+      </button>
+      <span className="pointer-events-none absolute left-1/2 top-7 z-20 hidden w-72 -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold leading-5 text-slate-600 shadow-xl shadow-blue-950/10 group-hover:block">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function SemesterSummaryStrip({ summaries }: { summaries?: SemesterAcademicSummary[] }) {
+  if (!summaries?.length) return null;
+  return (
+    <section className="mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-50 text-navy-800">
+          <BarChart3 className="h-5 w-5" />
+        </div>
+        <div>
+          <h2 className="font-serif text-xl font-bold text-navy-950">學期成績摘要</h2>
+          <p className="text-sm font-medium text-slate-500">由 transcript JSON 的 averageScoreList 解析</p>
+        </div>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {summaries.map((summary) => (
+          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4" key={summary.academicYearSemester}>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-black text-navy-950">{semesterLabel(summary)}</p>
+              <span className="rounded-lg bg-white px-2 py-0.5 text-xs font-black text-slate-500">{summary.totalCredits || "—"} 學分</span>
+            </div>
+            <p className="mt-3 text-2xl font-black text-navy-950">{summary.averageScore || "—"}</p>
+            <p className="text-sm font-bold text-[#9f7c31]">GPA {summary.gpa || "—"}</p>
+            <div className="mt-3 space-y-1 text-xs font-bold text-slate-500">
+              {summary.departmentRanking ? <p>系排名 {summary.departmentRanking}</p> : null}
+              {summary.classRanking ? <p>班排名 {summary.classRanking}</p> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -33,30 +93,48 @@ export function StudentDashboard() {
     if (!current) return row;
     return row.id > current.id ? row : current;
   }, null as NonNullable<typeof history.data>["rows"][number] | null), [history.data?.rows]);
-  const ranking = studentProfile?.ranking
-    ? studentProfile.ranking
+  const visibleLatestAudit = studentProfile ? latestAudit : null;
+  const fallbackRankings: StudentRanking[] = [];
+  if (studentProfile?.ranking) fallbackRankings.push({ label: "系排名", value: studentProfile.ranking, percent: studentProfile.rankingPercent });
+  if (studentProfile?.classRanking) fallbackRankings.push({ label: "班排名", value: studentProfile.classRanking, percent: studentProfile.classRankingPercent });
+  const rankings = studentProfile?.rankings?.length ? studentProfile.rankings : fallbackRankings;
+  const ranking = rankings[0]?.value || "未匯入";
+  const rankingDetail = rankings.map((item) => rankingText(item.label, item.value, item.percent)).filter(Boolean).join(" / ") || "等待 JSON 資料";
+  const averageWithGpa = studentProfile?.averageScore
+    ? `${studentProfile.averageScore}${studentProfile.cumulativeGpa ? ` / GPA ${studentProfile.cumulativeGpa}` : ""}`
     : "未匯入";
-  const rankingDetail = studentProfile?.rankingPercent
-    ? `前 ${studentProfile.rankingPercent}`
-    : studentProfile?.averageScore ? `平均成績 ${studentProfile.averageScore}` : "等待 JSON 資料";
 
   return (
     <div className="space-y-5">
-      <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-gradient-to-r from-white via-[#fff8ec] to-blue-50 p-6 shadow-xl shadow-blue-950/5">
-        <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#C5A059]/20 blur-3xl" />
+      <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-white p-6 shadow-xl shadow-blue-950/5">
         <div className="relative">
-          <div>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Student Dashboard</p>
             <h1 className="mt-2 font-serif text-3xl font-bold text-navy-950">學生端總覽</h1>
             <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-600">從 transcript 匯入開始，執行畢業審核並查看結果與歷史紀錄。</p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-right">
+              <p className="text-xs font-bold tracking-[0.16em] text-slate-400">最新審核</p>
+              <p className="mt-1 text-xl font-black text-navy-950">{visibleLatestAudit ? `${formatCredits(visibleLatestAudit.progress_percentage)}%` : "尚無"}</p>
+              <p className="text-xs font-semibold text-slate-500">{visibleLatestAudit ? `Audit #${visibleLatestAudit.id}` : "匯入 JSON 後顯示"}</p>
+            </div>
           </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            <StudentSummaryItem label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} icon={<BookOpen className="h-5 w-5" />} />
-            <StudentSummaryItem label="主修" value={studentProfile?.major || "JSON 匯入後顯示"} detail={studentProfile?.doubleMajor ? `雙主修 ${studentProfile.doubleMajor}` : "學籍資料"} icon={<GraduationCap className="h-5 w-5" />} />
-            <StudentSummaryItem label="Ranking" value={ranking} detail={rankingDetail} icon={<Award className="h-5 w-5" />} />
-            <StudentSummaryItem label="平均成績" value={studentProfile?.averageScore || "未匯入"} detail="Transcript total average" icon={<Sparkles className="h-5 w-5" />} />
-            <StudentSummaryItem label="最新審核" value={latestAudit ? `${formatCredits(latestAudit.progress_percentage)}%` : "尚無"} detail={latestAudit ? `Audit #${latestAudit.id}` : "尚未執行"} icon={<ClipboardCheck className="h-5 w-5" />} />
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+            <StudentSummaryItem className="xl:col-span-3" label="目前學生" value={studentName} detail={`學號 ${studentNumber}`} icon={<BookOpen className="h-5 w-5" />} />
+            <StudentSummaryItem className="xl:col-span-3" label="主修" value={studentProfile?.major || "JSON 匯入後顯示"} detail={studentProfile?.doubleMajor ? `雙主修 ${studentProfile.doubleMajor}` : "學籍資料"} icon={<GraduationCap className="h-5 w-5" />} />
+            <StudentSummaryItem className="xl:col-span-3" label="Ranking" value={ranking} detail="系排名與班排名列於下方" icon={<Award className="h-5 w-5" />} />
+            <StudentSummaryItem className="xl:col-span-3" label="平均成績" value={averageWithGpa} detail="Transcript total average" icon={<Sparkles className="h-5 w-5" />} />
           </div>
+          {rankings.length ? (
+            <div className="mt-5 flex flex-wrap gap-3">
+              {rankings.map((item) => (
+                <span className="rounded-full border border-[#C5A059]/30 bg-[#fffaf1] px-4 py-2 text-sm font-black text-navy-900" key={item.label}>
+                  {rankingText(item.label, item.value, item.percent)}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -113,7 +191,42 @@ export function StudentImportPage() {
 
   return (
     <div>
-      <PageHeader title="Transcript JSON 匯入" description="前端會先解析本機 JSON，再送到現有後端 transcript import API。" />
+      <PageHeader
+        title="Transcript JSON 匯入"
+        description="前端會先解析本機 JSON，再送到現有後端 transcript import API。"
+        actions={(
+          <a
+            className="inline-flex items-center gap-2 rounded-xl bg-navy-900 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-navy-950"
+            href="https://i.nccu.edu.tw/Login.aspx?ReturnUrl=%2f"
+            rel="noreferrer"
+            target="_blank"
+          >
+            前往 iNCCU 下載 JSON
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        )}
+      />
+      <section className="mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-50 text-navy-800">
+            <Download className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-serif text-xl font-bold text-navy-950">如何下載 JSON</h2>
+            <p className="text-sm font-medium text-slate-500">從 iNCCU 匯出課業學習資料後，再回本頁上傳。</p>
+          </div>
+        </div>
+        <div>
+          <div className="grid gap-3 md:grid-cols-5">
+          {["登入 iNCCU", "進入「我的全人」", "點選「資料格式化匯出」", "勾選「課業學習」後點選「下載」", "回本頁選擇 JSON 檔"].map((step, index) => (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3" key={step}>
+              <span className="mb-2 grid h-7 w-7 place-items-center rounded-full bg-navy-900 text-xs font-black text-white">{index + 1}</span>
+              <p className="text-xs font-black leading-5 text-navy-950 xl:text-sm">{step}</p>
+            </div>
+          ))}
+          </div>
+        </div>
+      </section>
       <div className="rounded-lg border border-dashed border-navy-200 bg-white p-8 text-center">
         <FileInput className="mx-auto h-12 w-12 text-navy-700" />
         <p className="mt-4 font-bold text-navy-900">選擇 transcript.json</p>
@@ -141,7 +254,7 @@ export function StudentImportPage() {
 }
 
 export function StudentCoursesPage() {
-  const { currentUser } = useAppState();
+  const { currentUser, studentProfile } = useAppState();
   const [keyword, setKeyword] = useState("");
   const courses = useStudentCourses(currentUser.id);
   const rows = useMemo(() => {
@@ -160,11 +273,12 @@ export function StudentCoursesPage() {
       />
       {courses.isLoading ? <LoadingState /> : null}
       {courses.error ? <ErrorState message={courses.error.message} /> : null}
+      <SemesterSummaryStrip summaries={studentProfile?.semesterSummaries} />
       {rows.length ? (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
-              <tr><th className="px-3 py-2">學年期</th><th className="px-3 py-2">課號</th><th className="px-3 py-2">課名</th><th className="px-3 py-2">學分</th><th className="px-3 py-2">狀態</th><th className="px-3 py-2">來源</th><th className="px-3 py-2">認列</th></tr>
+              <tr><th className="px-3 py-2">學年期</th><th className="px-3 py-2">課號</th><th className="px-3 py-2">課名</th><th className="px-3 py-2">學分</th><th className="px-3 py-2">成績</th><th className="px-3 py-2">狀態</th><th className="px-3 py-2">來源</th><th className="px-3 py-2">認列</th></tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((course) => (
@@ -173,6 +287,7 @@ export function StudentCoursesPage() {
                   <td className="px-3 py-2 font-semibold text-navy-800">{course.course_code}</td>
                   <td className="px-3 py-2">{course.course_name}</td>
                   <td className="px-3 py-2">{formatCredits(course.credits)}</td>
+                  <td className="px-3 py-2 font-semibold text-navy-900">{course.score || "—"}</td>
                   <td className="px-3 py-2"><StatusBadge value={course.status} /></td>
                   <td className="px-3 py-2"><StatusBadge value={course.source} /></td>
                   <td className="px-3 py-2"><StatusBadge value={course.recognition_type} /></td>
@@ -209,6 +324,7 @@ export function AuditRunPage() {
       <div className="max-w-xl rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <div className="grid gap-4">
           <label className="text-sm font-semibold text-slate-700">學年度
+            <InfoTip label="學年度說明" text="依你的入學年度或適用畢業規則年度選擇；例如 111 入學就選 111。" />
             <select className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" value={academicYear} onChange={(event) => setAcademicYear(event.target.value)}>
               <option value="111">111</option>
               <option value="112">112</option>
@@ -219,10 +335,12 @@ export function AuditRunPage() {
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <input type="checkbox" checked={includeInProgress} onChange={(event) => setIncludeInProgress(event.target.checked)} />
             包含修課中課程作為預估
+            <InfoTip label="修課中預估說明" text="勾選後會另外產生預估結果，用來查看修課中課程如果都通過時的畢業進度；正式結果仍只採計已通過課程。" />
           </label>
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <input type="checkbox" checked={saveResult} onChange={(event) => setSaveResult(event.target.checked)} />
             儲存審核紀錄
+            <InfoTip label="儲存審核紀錄說明" text="勾選會將本次審核寫入歷史紀錄；不勾則只顯示本次結果，不保存到歷史紀錄。" />
           </label>
           <button className="rounded-md bg-navy-800 px-4 py-3 text-sm font-bold text-white hover:bg-navy-900" onClick={runAudit} disabled={mutation.isPending}>
             {mutation.isPending ? "審核中..." : "執行審核"}

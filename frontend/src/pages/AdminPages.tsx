@@ -31,8 +31,8 @@ function TargetUserControl() {
 function AdminFlowCard({ icon, title, description, to, tone = "navy" }: { icon: ReactNode; title: string; description: string; to: string; tone?: "navy" | "amber" | "emerald" }) {
   const toneClass = {
     navy: "bg-navy-50 text-navy-800 border-navy-100",
-    amber: "bg-amber-50 text-amber-800 border-amber-100",
-    emerald: "bg-emerald-50 text-emerald-800 border-emerald-100"
+    amber: "bg-[#fffaf1] text-[#9f7c31] border-[#C5A059]/25",
+    emerald: "bg-navy-50 text-navy-800 border-navy-100"
   }[tone];
 
   return (
@@ -65,21 +65,21 @@ export function AdminDashboard() {
   return (
     <div>
       <PageHeader title="管理員總覽" description="管理員可檢視指定學生資料，處理待確認課程與人工調整。" actions={<TargetUserControl />} />
-      <section className="mb-5 overflow-hidden rounded-lg border border-navy-100 bg-white shadow-sm">
-        <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-700 p-6 text-white">
+      <section className="mb-5 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-blue-950/5">
+        <div className="border-b border-slate-100 bg-white p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-blue-100">目前管理對象</p>
-              <h2 className="mt-1 text-3xl font-bold">userId {targetUserId}</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-100">先確認 transcript 無法分類的課程，再用人工調整補上認列方式，最後回到審核紀錄檢查結果。</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#C5A059]">目前管理對象</p>
+              <h2 className="mt-2 font-serif text-3xl font-bold text-navy-950">userId {targetUserId}</h2>
+              <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-600">先確認 transcript 無法分類的課程，再用人工調整補上認列方式，最後回到審核紀錄檢查結果。</p>
             </div>
-            <div className="rounded-lg border border-white/15 bg-white/10 px-4 py-3">
-              <p className="text-sm text-blue-100">最新審核完成率</p>
-              <p className="mt-1 text-2xl font-bold">{stats.latestProgress === null ? "尚無" : `${formatCredits(stats.latestProgress)}%`}</p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-right">
+              <p className="text-xs font-bold tracking-[0.16em] text-slate-400">最新審核完成率</p>
+              <p className="mt-1 text-2xl font-black text-navy-950">{stats.latestProgress === null ? "尚無" : `${formatCredits(stats.latestProgress)}%`}</p>
             </div>
           </div>
         </div>
-        <div className="grid gap-4 bg-slate-50 p-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 bg-white p-5 md:grid-cols-2 xl:grid-cols-4">
           <MetricTile label="修課資料" value={stats.totalCourses} detail={studentCourses.isLoading ? "載入中" : "已匯入/人工資料總數"} icon={<Database className="h-5 w-5" />} />
           <MetricTile label="待確認課程" value={stats.unresolvedCourses} detail="缺少課程分類或需要人工判斷" icon={<FileWarning className="h-5 w-5" />} />
           <MetricTile label="人工調整" value={stats.manualAdjustments} detail="MANUAL student_course rows" icon={<UserCog className="h-5 w-5" />} />
@@ -613,7 +613,7 @@ export function AdminRequirementsPage() {
 }
 
 export function AdminAuditHistoryPage() {
-  const { targetUserId } = useAppState();
+  const { targetUserId, targetStudentProfile } = useAppState();
   const history = useAuditHistory(targetUserId);
   const [selected, setSelected] = useState<number | null>(null);
   
@@ -663,7 +663,7 @@ export function AdminAuditHistoryPage() {
         {historyDetail.isLoading ? <LoadingState label="正在載入審核明細" /> : null}
         {historyDetail.error ? <ErrorState message={historyDetail.error.message} /> : null}
         {!historyDetail.isLoading && !historyDetail.error ? (
-          result ? <AuditResultView result={result} /> : <EmptyState title={selectedRow ? "這筆紀錄沒有審核明細" : "選擇一筆審核紀錄"} />
+          result ? <AuditResultView result={result} studentProfile={targetStudentProfile} /> : <EmptyState title={selectedRow ? "這筆紀錄沒有審核明細" : "選擇一筆審核紀錄"} />
         ) : null}
       </div>
     </div>

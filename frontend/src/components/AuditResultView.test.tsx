@@ -109,7 +109,10 @@ describe("AuditResultView", () => {
           minor: "應用數學系、會計學系",
           ranking: "4 / 75",
           rankingPercent: "5.33 %",
-          averageScore: "94.55"
+          classRanking: "5 / 75",
+          classRankingPercent: "6.67 %",
+          averageScore: "94.55",
+          cumulativeGpa: "4.21"
         }}
       />
     );
@@ -118,10 +121,12 @@ describe("AuditResultView", () => {
     expect(screen.getAllByText("金融學系").length).toBeGreaterThan(0);
     expect(screen.getByText("統計學系")).toBeInTheDocument();
     expect(screen.getByText("應用數學系、會計學系")).toBeInTheDocument();
-    expect(screen.getAllByText("成績 Ranking").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("4 / 75（前 5.33 %）").length).toBeGreaterThan(0);
+    expect(screen.getByText(/系排名：4 \/ 75/)).toBeInTheDocument();
+    expect(screen.getByText(/班排名：5 \/ 75/)).toBeInTheDocument();
     expect(screen.getAllByText("平均成績").length).toBeGreaterThan(0);
     expect(screen.getAllByText("94.55").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("GPA").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("4.21").length).toBeGreaterThan(0);
   });
 
   it("keeps action required compact until the user expands missing courses", () => {

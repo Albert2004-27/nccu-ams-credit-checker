@@ -26,6 +26,7 @@ type AppState = {
   targetUserId: number;
   lastAuditResult: AuditResult | null;
   studentProfile: StudentAcademicProfile | null;
+  targetStudentProfile: StudentAcademicProfile | null;
   setRole: (role: UserRole | null) => void;
   setCurrentUser: (user: DemoUser) => void;
   setTargetUserId: (userId: number) => void;
@@ -66,6 +67,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [targetUserId, setTargetUserIdState] = useState(() => readTargetUserId());
   const [lastAuditResult, setLastAuditResult] = useState<AuditResult | null>(null);
   const [studentProfile, setStudentProfileState] = useState<StudentAcademicProfile | null>(() => readStudentProfile(DEFAULT_STUDENT.id));
+  const [targetStudentProfile, setTargetStudentProfileState] = useState<StudentAcademicProfile | null>(() => readStudentProfile(readTargetUserId()));
 
   const value = useMemo<AppState>(() => ({
     role,
@@ -73,6 +75,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     targetUserId,
     lastAuditResult,
     studentProfile,
+    targetStudentProfile,
     setRole(nextRole) {
       if (nextRole) localStorage.setItem("nccu-role", nextRole);
       else localStorage.removeItem("nccu-role");
@@ -80,33 +83,41 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (nextRole === "admin") {
         setCurrentUserState(DEFAULT_ADMIN);
         setStudentProfileState(null);
+        setTargetStudentProfileState(readStudentProfile(targetUserId));
       }
       if (nextRole === "student") {
         setCurrentUserState(DEFAULT_STUDENT);
         setTargetUserIdState(DEFAULT_STUDENT.id);
-        setStudentProfileState(readStudentProfile(DEFAULT_STUDENT.id));
+        const profile = readStudentProfile(DEFAULT_STUDENT.id);
+        setStudentProfileState(profile);
+        setTargetStudentProfileState(profile);
       }
     },
     setCurrentUser(user) {
       setCurrentUserState(user);
       if (user.role === "student") {
         setTargetUserIdState(user.id);
-        setStudentProfileState(readStudentProfile(user.id));
+        const profile = readStudentProfile(user.id);
+        setStudentProfileState(profile);
+        setTargetStudentProfileState(profile);
       } else {
         setStudentProfileState(null);
+        setTargetStudentProfileState(readStudentProfile(targetUserId));
       }
     },
     setTargetUserId(userId) {
       localStorage.setItem("nccu-target-user-id", String(userId));
       setTargetUserIdState(userId);
+      setTargetStudentProfileState(readStudentProfile(userId));
     },
     setLastAuditResult,
     setStudentProfile(profile) {
       if (profile) localStorage.setItem(profileStorageKey(currentUser.id), JSON.stringify(profile));
       else localStorage.removeItem(profileStorageKey(currentUser.id));
       setStudentProfileState(profile);
+      if (currentUser.id === targetUserId) setTargetStudentProfileState(profile);
     }
-  }), [currentUser, lastAuditResult, role, studentProfile, targetUserId]);
+  }), [currentUser, lastAuditResult, role, studentProfile, targetStudentProfile, targetUserId]);
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

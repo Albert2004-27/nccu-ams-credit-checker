@@ -1,4 +1,4 @@
-import { AlertTriangle, Award, BookOpenCheck, CheckCircle2, ChevronDown, Clock3, FileWarning, GraduationCap, Layers3, Medal, Sparkles, Trophy } from "lucide-react";
+import { AlertTriangle, BookOpenCheck, CheckCircle2, ChevronDown, Clock3, FileWarning, GraduationCap, Layers3, Medal, Trophy } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { formatCredits } from "../lib/status";
 import type { StudentAcademicProfile } from "../lib/transcriptProfile";
@@ -60,9 +60,9 @@ function displayPercent(value: number) {
 function ThinProgressBar({ percent, tone = "blue" }: { percent: number; tone?: "blue" | "green" | "purple" | "gold" }) {
   const safePercent = Math.min(100, Math.max(0, percent));
   const toneClass = {
-    blue: "bg-blue-700",
-    green: "bg-emerald-600",
-    purple: "bg-violet-600",
+    blue: "bg-navy-800",
+    green: "bg-navy-700",
+    purple: "bg-navy-700",
     gold: "bg-[#C5A059]"
   }[tone];
   return (
@@ -85,14 +85,27 @@ function StudentProfileItem({ label, value, emphasis = false }: { label: string;
   );
 }
 
-function formatRanking(profile: StudentAcademicProfile) {
-  if (!profile.ranking) return undefined;
-  return profile.rankingPercent ? `${profile.ranking}（前 ${profile.rankingPercent}）` : profile.ranking;
+function formatRankValue(value?: string, percent?: string) {
+  if (!value) return undefined;
+  return percent ? `${value}（前 ${percent}）` : value;
+}
+
+function formatDepartmentRanking(profile: StudentAcademicProfile) {
+  return formatRankValue(profile.ranking, profile.rankingPercent);
+}
+
+function formatClassRanking(profile: StudentAcademicProfile) {
+  return formatRankValue(profile.classRanking, profile.classRankingPercent);
 }
 
 function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfile }) {
+  const rankPills = [
+    { label: "系排名", value: formatDepartmentRanking(profile) },
+    { label: "班排名", value: formatClassRanking(profile) }
+  ].filter((item): item is { label: string; value: string } => Boolean(item.value));
+
   return (
-    <section className="overflow-hidden rounded-3xl border border-amber-100 bg-gradient-to-r from-white via-[#fff8ec] to-blue-50 p-5 shadow-sm shadow-blue-950/5">
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="rounded-2xl bg-navy-900 p-3 text-white shadow-lg shadow-blue-950/20">
@@ -103,17 +116,26 @@ function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfi
             <p className="text-sm text-slate-500">由匯入的 NCCU transcript JSON 解析</p>
           </div>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#C5A059]/30 bg-white/80 px-4 py-2 text-sm font-bold text-navy-900">
-          <Medal className="h-4 w-4 text-[#C5A059]" />
-          排名：{formatRanking(profile) || "JSON 未提供"}
+        <div className="flex flex-wrap gap-2">
+          {rankPills.length ? rankPills.map((item) => (
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-navy-900" key={item.label}>
+              <Medal className="h-4 w-4 text-[#C5A059]" />
+              {item.label}：{item.value}
+            </div>
+          )) : (
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-navy-900">
+              <Medal className="h-4 w-4 text-[#C5A059]" />
+              排名：JSON 未提供
+            </div>
+          )}
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         <StudentProfileItem label="主修" value={profile.major} emphasis />
         <StudentProfileItem label="雙主修" value={profile.doubleMajor} />
         <StudentProfileItem label="輔修" value={profile.minor} />
-        <StudentProfileItem label="成績 Ranking" value={formatRanking(profile)} />
         <StudentProfileItem label="平均成績" value={profile.averageScore} />
+        <StudentProfileItem label="GPA" value={profile.cumulativeGpa} />
       </div>
     </section>
   );
@@ -122,16 +144,14 @@ function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfi
 function ResultHero({ result, studentProfile }: { result: AuditResult; studentProfile?: StudentAcademicProfile | null }) {
   const eligible = result.graduationEligible;
   const studentName = studentProfile?.studentName ? `${studentProfile.studentName}，` : "";
-  const statusColor = eligible ? "text-emerald-700" : "text-orange-600";
+  const statusColor = eligible ? "text-navy-950" : "text-[#9f7c31]";
   const StatusIcon = eligible ? CheckCircle2 : AlertTriangle;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-[#C5A059]/25 bg-[#fffaf1] p-6 shadow-xl shadow-blue-950/5">
-      <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-[#C5A059]/20 blur-3xl" />
-      <div className="absolute -bottom-24 left-1/3 h-52 w-52 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="relative flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
+    <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-blue-950/5">
+      <div className="relative">
         <div className="flex gap-4">
-          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full ${eligible ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-600"}`}>
+          <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border ${eligible ? "border-navy-100 bg-navy-50 text-navy-800" : "border-[#C5A059]/25 bg-[#fffaf1] text-[#9f7c31]"}`}>
             <StatusIcon className="h-9 w-9" />
           </div>
           <div className="min-w-0 flex-1">
@@ -141,31 +161,14 @@ function ResultHero({ result, studentProfile }: { result: AuditResult; studentPr
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-slate-600">
               <span className="whitespace-nowrap">目前採計 {formatCredits(result.totalCredits.earned)} / {formatCredits(result.totalCredits.required)} 學分</span>
-              <span className="whitespace-nowrap text-orange-600">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
+              <span className="whitespace-nowrap text-[#9f7c31]">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
               <span className="whitespace-nowrap text-xs opacity-70">規則：{result.academicYear} 學年度 / {result.department}</span>
               <span className="inline-flex items-center gap-1 whitespace-nowrap"><Clock3 className="h-4 w-4" />模式 {result.mode}</span>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-3 xl:flex-nowrap">
-          <HeroInfoCard icon={<GraduationCap className="h-4 w-4" />} label="主修" value={studentProfile?.major || result.department} />
-          <HeroInfoCard icon={<Award className="h-4 w-4" />} label="成績 Ranking" value={studentProfile ? formatRanking(studentProfile) || "—" : "—"} wide />
-          <HeroInfoCard icon={<Sparkles className="h-4 w-4" />} label="平均成績" value={studentProfile?.averageScore || "—"} />
-        </div>
       </div>
     </section>
-  );
-}
-
-function HeroInfoCard({ icon, label, value, wide = false }: { icon: ReactNode; label: string; value: string; wide?: boolean }) {
-  return (
-    <div className={`rounded-2xl border border-white/80 bg-white/85 px-4 py-3 shadow-lg shadow-blue-950/5 backdrop-blur ${wide ? "min-w-[160px]" : "min-w-[110px] flex-1"}`}>
-      <div className="mb-2 inline-flex rounded-xl bg-blue-50 p-2 text-navy-800">
-        {icon}
-      </div>
-      <p className="text-[10px] font-bold tracking-[0.16em] text-slate-400 uppercase">{label}</p>
-      <p className="mt-1 whitespace-nowrap text-sm font-black text-navy-950">{value}</p>
-    </div>
   );
 }
 
@@ -180,17 +183,17 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
   const progress = percentOf(earned, required);
   const isComplete = group ? group.status === "COMPLETE" : progress >= 100;
   const toneClass = {
-    blue: "from-navy-900 to-blue-700 text-blue-50 bg-blue-50",
-    green: "from-emerald-700 to-teal-500 text-emerald-50 bg-emerald-50",
-    purple: "from-violet-700 to-indigo-500 text-violet-50 bg-violet-50",
-    gold: "from-[#9f7c31] to-[#C5A059] text-amber-50 bg-amber-50"
+    blue: "bg-navy-900 text-white",
+    green: "bg-navy-800 text-white",
+    purple: "bg-navy-700 text-white",
+    gold: "bg-[#C5A059] text-navy-950"
   }[tone];
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className={`shrink-0 rounded-2xl bg-gradient-to-br p-2.5 shadow-lg ${toneClass}`}>
+          <div className={`shrink-0 rounded-2xl p-2.5 shadow-lg shadow-blue-950/10 ${toneClass}`}>
             {icon}
           </div>
           <div className="min-w-0">
@@ -201,7 +204,7 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
             </p>
           </div>
         </div>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${isComplete ? "bg-emerald-50 text-emerald-600" : "bg-orange-50 text-orange-600"}`}>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${isComplete ? "bg-navy-50 text-navy-700" : "bg-slate-100 text-slate-700"}`}>
           {statusText(isComplete)}
         </span>
       </div>
@@ -216,7 +219,7 @@ function CategoryProgressCard({ title, group, earned, required, icon, tone }: {
 function GraduationRing({ progress, eligible }: { progress: number; eligible: boolean }) {
   const safeProgress = Math.min(100, Math.max(0, progress));
   return (
-    <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(#1f5fd0 ${safeProgress * 3.6}deg, #e2e8f0 0deg)` }}>
+    <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(#C5A059 ${safeProgress * 3.6}deg, #e2e8f0 0deg)` }}>
       <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white text-center shadow-lg shadow-blue-950/10">
         <p className="text-2xl font-black text-navy-950">{displayPercent(safeProgress)}</p>
         <p className="mt-1 text-xs font-bold tracking-[0.16em] text-slate-400">總進度</p>
@@ -230,7 +233,7 @@ function GraduationProgressPanel({ result }: { result: AuditResult }) {
     { label: "必修課程", group: groupByCode(result, "REQUIRED"), required: result.totalCredits.structure.required, tone: "blue" as const },
     { label: "通識課程", group: groupByCode(result, "GENERAL"), required: result.totalCredits.structure.generalEducation, tone: "green" as const },
     { label: "選修課程", group: groupByCode(result, "ELECTIVE"), required: result.totalCredits.structure.elective, tone: "purple" as const },
-    { label: "體育課程", group: groupByCode(result, "PE"), required: result.totalCredits.structure.physicalEducation, tone: "gold" as const }
+    { label: "體育課程", group: groupByCode(result, "PE"), required: result.totalCredits.structure.physicalEducation, tone: "blue" as const }
   ].filter((row) => row.group || row.required > 0);
 
   return (
@@ -286,10 +289,10 @@ function ActionRequiredItem({
   const hasContent = !!children;
   
   const toneClasses = {
-    red: "border-red-100 bg-red-50/50 text-red-700 hover:bg-red-50",
-    orange: "border-orange-100 bg-orange-50/50 text-orange-700 hover:bg-orange-50",
-    amber: "border-amber-100 bg-amber-50/50 text-amber-700 hover:bg-amber-50",
-    purple: "border-purple-100 bg-purple-50/50 text-purple-700 hover:bg-purple-50"
+    red: "border-slate-200 bg-slate-50 text-navy-900 hover:bg-white",
+    orange: "border-slate-200 bg-white text-navy-900 hover:bg-slate-50",
+    amber: "border-slate-200 bg-slate-50 text-navy-900 hover:bg-white",
+    purple: "border-slate-200 bg-slate-50 text-navy-900 hover:bg-white"
   };
 
   return (
@@ -360,7 +363,7 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
           <h3 className="font-serif text-xl font-bold text-navy-950">待處理事項</h3>
           <p className="text-xs font-bold tracking-widest text-slate-400 uppercase">Action Required</p>
         </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-inner">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#fffaf1] text-[#9f7c31] shadow-inner">
           <AlertTriangle className="h-5 w-5" />
         </div>
       </div>
@@ -396,7 +399,7 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
             <div className="rounded-xl bg-white/60 p-3 text-sm shadow-sm">
               <p className="font-medium text-slate-600">
                 目前已採計 <span className="font-black text-navy-950">{formatCredits(result.totalCredits.earned)}</span> 學分，
-                距離畢業門檻還差 <span className="font-black text-orange-600">{formatCredits(result.totalCredits.missing)}</span> 學分。
+                距離畢業門檻還差 <span className="font-black text-[#9f7c31]">{formatCredits(result.totalCredits.missing)}</span> 學分。
               </p>
             </div>
           </ActionRequiredItem>
@@ -414,14 +417,14 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
               <div key={group.groupName} className="rounded-xl bg-white/50 p-2 shadow-sm">
                 <div className="mb-2 flex items-center justify-between gap-2 px-1">
                   <p className="text-xs font-black text-slate-500">{group.groupName}</p>
-                  <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700">{group.courses.length} 門</span>
+                  <span className="rounded-md bg-white px-2 py-0.5 text-[10px] font-black text-navy-700">{group.courses.length} 門</span>
                 </div>
                 <div className="space-y-1.5">
                   {group.courses.map((course, i) => (
                     <div key={`${group.groupName}-${course.name}-${i}`} className="rounded-lg bg-white/70 p-3 text-sm">
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-bold text-slate-800">{course.name}</p>
-                        <span className="text-[10px] font-black text-amber-600">{course.credits} 學分</span>
+                        <span className="text-[10px] font-black text-navy-700">{course.credits} 學分</span>
                       </div>
                       <p className="mt-1 text-xs font-medium text-slate-400">原因：{course.reason}</p>
                     </div>

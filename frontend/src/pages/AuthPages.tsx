@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BookOpenCheck, ClipboardCheck, GraduationCap, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowDown, ArrowRight, BookOpenCheck, ClipboardCheck, GraduationCap, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { getDefaultRouteForRole } from "../lib/navigation";
 import { useAppState } from "../state/AppState";
 import type { DemoUser, UserRole } from "../types/api";
@@ -8,75 +8,73 @@ import nccuLogo from "../assets/nccu-logo.png";
 
 function AuthFrame({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#eef3f8] text-slate-900">
-      <div className="grid min-h-screen lg:grid-cols-[0.95fr_1.05fr]">
-        <section className="relative hidden overflow-hidden bg-[#071f3f] px-14 py-12 text-white lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.10)_0_1px,transparent_1px_18px)] opacity-20" />
-          <div className="absolute inset-x-0 top-0 h-1 bg-[#C5A059]" />
-          <div className="relative">
-            <div className="flex items-center gap-4">
-              <div className="grid h-16 w-16 place-items-center rounded-2xl border border-white/15 bg-white/10 shadow-xl shadow-black/20">
-                <GraduationCap className="h-8 w-8" />
-              </div>
+    <div className="min-h-screen bg-[#eaf1f8] text-slate-900">
+      <section className="relative flex min-h-[64vh] overflow-hidden bg-[#071f3f] px-6 py-8 text-white md:px-12 lg:px-20">
+        <img className="absolute right-[-8rem] top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 object-contain opacity-[0.08] md:right-[-4rem] md:h-[42rem] md:w-[42rem]" src={nccuLogo} alt="" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[#071f3f]/90" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-[#C5A059]" />
+        <div className="relative z-10 flex w-full flex-col">
+          <header className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
+              <img className="h-14 w-14 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-xl shadow-black/20" src={nccuLogo} alt="NCCU logo" />
               <div>
-                <p className="font-serif text-3xl font-bold tracking-normal">畢業審核系統</p>
-                <p className="mt-1 text-sm font-semibold text-blue-100">NCCU Applied Mathematics</p>
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <p className="whitespace-nowrap font-serif text-xl font-bold tracking-normal md:text-2xl">國立政治大學 應用數學系</p>
+                  <p className="whitespace-nowrap rounded-full border border-[#C5A059]/40 px-3 py-1 text-xs font-black tracking-[0.16em] text-[#f4d68c]">畢業審核系統</p>
+                </div>
+                <p className="mt-1 text-sm font-semibold text-blue-100">Department of Mathematical Sciences, NCCU</p>
               </div>
             </div>
+            <a className="hidden rounded-xl border border-white/20 px-4 py-2 text-sm font-black text-white transition hover:bg-white/10 md:inline-flex" href="#auth-panel">
+              Secure Access
+            </a>
+          </header>
 
-            <div className="mt-20 max-w-2xl">
-              <p className="mb-5 inline-flex rounded-full border border-[#C5A059]/40 bg-[#C5A059]/10 px-4 py-2 text-xs font-black uppercase tracking-[0.24em] text-[#f4d68c]">
-                Graduation Audit
+          <div className="flex flex-1 items-center justify-center py-14 text-center">
+            <div className="w-full max-w-7xl">
+              <p className="mx-auto mb-5 inline-flex rounded-full border border-[#C5A059]/50 bg-[#C5A059]/10 px-7 py-2 text-xs font-black uppercase tracking-[0.28em] text-[#f4d68c]">
+                Graduation Audit Platform
               </p>
-              <h1 className="font-serif text-5xl font-bold leading-tight tracking-normal">
-                以清楚的規則與結果，完成畢業資格檢核。
+              <h1 className="mx-auto whitespace-nowrap font-serif text-[1.35rem] font-bold leading-none tracking-normal sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl">
+                以清楚的規則與結果，完成畢業資格檢核
               </h1>
-              <p className="mt-6 max-w-xl text-lg font-medium leading-8 text-blue-100">
-                支援 transcript 匯入、畢業審核、通識與必修解釋，以及管理員人工調整。
+              <p className="mx-auto mt-7 max-w-3xl text-base font-medium leading-8 text-blue-100 md:text-xl">
+                整合 transcript JSON 匯入、畢業審核、修課成績與通識必修解釋，讓學生與行政人員使用同一套可追溯的檢核流程。
               </p>
-            </div>
 
-            <div className="mt-12 grid max-w-xl gap-3 sm:grid-cols-3">
-              <HeroPill icon={<BookOpenCheck className="h-5 w-5" />} label="規則清楚" />
-              <HeroPill icon={<ClipboardCheck className="h-5 w-5" />} label="結果可追溯" />
-              <HeroPill icon={<ShieldCheck className="h-5 w-5" />} label="行政可管理" />
+              <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
+                <HeroPill icon={<BookOpenCheck className="h-5 w-5" />} label="規則清楚" />
+                <HeroPill icon={<ClipboardCheck className="h-5 w-5" />} label="結果可追溯" />
+                <HeroPill icon={<ShieldCheck className="h-5 w-5" />} label="行政可管理" />
+              </div>
+
+              <a className="mx-auto mt-10 inline-flex items-center gap-2 rounded-xl bg-[#C5A059] px-7 py-3 text-sm font-black text-navy-950 shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-[#d7b670]" href="#auth-panel">
+                前往登入
+                <ArrowDown className="h-4 w-4" />
+              </a>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="relative flex items-center justify-start gap-6 border-t border-white/10 pt-8">
-            <div className="flex items-center gap-4">
-              <div className="grid h-24 w-24 place-items-center rounded-3xl border border-white/10 bg-white p-3 shadow-xl shadow-black/20">
-                <img className="h-full w-full object-contain" src={nccuLogo} alt="NCCU logo" />
-              </div>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-white/10 px-8 py-5 text-left backdrop-blur">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-100">Department</p>
-              <p className="mt-2 whitespace-nowrap font-serif text-2xl font-bold leading-tight">Applied Mathematics</p>
+      <main className="flex min-h-screen items-center justify-center px-5 py-12" id="auth-panel">
+        <div className="w-full max-w-[540px]">
+          <div className="mb-6 flex items-center justify-center gap-4">
+            <img className="h-14 w-14 shrink-0 rounded-full border border-slate-200 bg-white object-contain p-1.5 shadow-lg shadow-blue-950/10" src={nccuLogo} alt="NCCU logo" />
+            <div>
+              <p className="font-serif text-xl font-bold text-navy-950">Mathematical Sciences</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Graduate Audit</p>
             </div>
           </div>
-        </section>
-
-        <main className="flex items-center justify-center px-5 py-10">
-          <div className="w-full max-w-[520px]">
-            <div className="mb-6 flex items-center gap-3 lg:hidden">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-navy-900 text-white shadow-lg shadow-blue-950/20">
-                <GraduationCap className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-serif text-xl font-bold text-navy-950">畢業審核系統</p>
-                <p className="text-xs font-bold text-slate-500">NCCU Applied Mathematics</p>
-              </div>
+          <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl shadow-blue-950/10 md:p-10">
+            <div className="mb-7">
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-[#C5A059]">Secure Access</p>
+              <h2 className="mt-3 font-serif text-4xl font-bold text-navy-950">{title}</h2>
             </div>
-            <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-2xl shadow-blue-950/10">
-              <div className="mb-7">
-                <p className="text-xs font-black uppercase tracking-[0.22em] text-[#C5A059]">Secure Access</p>
-                <h2 className="mt-3 font-serif text-3xl font-bold text-navy-950">{title}</h2>
-              </div>
             {children}
-            </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

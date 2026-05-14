@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppStateProvider } from "../state/AppState";
+import type { StudentAcademicProfile } from "../lib/transcriptProfile";
 import type { AuditHistoryRow, AuditResult } from "../types/api";
 import { AdminAuditHistoryPage, AdminRequirementsPage } from "./AdminPages";
 
@@ -20,9 +21,11 @@ vi.mock("../api/hooks", () => ({
 }));
 
 vi.mock("../components/AuditResultView", () => ({
-  AuditResultView: ({ result }: { result: AuditResult }) => (
+  AuditResultView: ({ result, studentProfile }: { result: AuditResult; studentProfile?: StudentAcademicProfile | null }) => (
     <div data-testid="audit-result-view">
       {result.graduationEligible ? "符合畢業資格" : "尚未符合畢業資格"}
+      {studentProfile?.studentName ? ` / ${studentProfile.studentName}` : ""}
+      {studentProfile?.cumulativeGpa ? ` / GPA ${studentProfile.cumulativeGpa}` : ""}
     </div>
   )
 }));
@@ -82,6 +85,13 @@ describe("AdminAuditHistoryPage", () => {
   });
 
   it("loads selected audit detail before rendering the result panel", () => {
+    localStorage.setItem("nccu-student-profile:1", JSON.stringify({
+      studentName: "陳柏澔",
+      ranking: "4 / 75",
+      classRanking: "5 / 75",
+      averageScore: "94.55",
+      cumulativeGpa: "4.21"
+    }));
     useAuditHistoryMock.mockReturnValue({
       data: { count: 1, rows: [auditRow] },
       isLoading: false,
@@ -101,6 +111,8 @@ describe("AdminAuditHistoryPage", () => {
 
     expect(useAuditHistoryDetailMock).toHaveBeenCalledWith(12);
     expect(screen.getByTestId("audit-result-view")).toHaveTextContent("尚未符合畢業資格");
+    expect(screen.getByTestId("audit-result-view")).toHaveTextContent("陳柏澔");
+    expect(screen.getByTestId("audit-result-view")).toHaveTextContent("GPA 4.21");
   });
 });
 

@@ -3,6 +3,7 @@ import { BookOpen, ChevronRight, ClipboardCheck, Database, FileInput, Graduation
 import { clsx } from "clsx";
 import { useHealth } from "../api/hooks";
 import { useAppState } from "../state/AppState";
+import nccuLogo from "../assets/nccu-logo.png";
 
 const studentLinks = [
   { to: "/student", label: "Dashboard", icon: Home },
@@ -38,16 +39,15 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
 
   return (
     <div className="min-h-screen bg-[#f3f6fb] text-slate-900">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(197,160,89,0.12),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(31,95,208,0.10),transparent_32%)]" />
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 overflow-hidden bg-gradient-to-b from-[#071f3f] via-[#082b55] to-[#061831] text-white shadow-2xl shadow-blue-950/40 lg:block">
-        <div className="absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_20%_10%,rgba(197,160,89,0.28),transparent_45%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(7,31,63,0.08),transparent_34%)]" />
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-72 overflow-hidden bg-[#071f3f] text-white shadow-2xl shadow-blue-950/40 lg:block">
+        <img className="absolute -bottom-20 -right-20 h-72 w-72 object-contain opacity-[0.05]" src={nccuLogo} alt="" aria-hidden="true" />
         <div className="relative flex h-24 items-center gap-3 border-b border-white/10 px-6">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-white/15 bg-white/10 shadow-lg shadow-black/20">
-            <GraduationCap className="h-7 w-7 text-white" />
-          </div>
-          <div>
-            <p className="font-serif text-xl font-bold leading-tight">NCCU AMS</p>
-            <p className="text-sm font-medium text-blue-100">Credit Checker</p>
+          <img className="h-12 w-12 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-lg shadow-black/20" src={nccuLogo} alt="NCCU logo" />
+          <div className="min-w-0">
+            <p className="whitespace-nowrap font-serif text-base font-bold leading-tight">國立政治大學 應用數學系</p>
+            <p className="mt-1 text-xs font-semibold text-blue-100">Department of Mathematical Sciences</p>
+            <p className="mt-1 inline-flex rounded-full border border-[#C5A059]/40 px-2 py-0.5 text-[10px] font-black tracking-[0.12em] text-[#f4d68c]">畢業審核系統</p>
           </div>
         </div>
         <nav className="relative space-y-2 px-4 py-6">
@@ -57,8 +57,8 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
               to={item.to}
               end={item.to === `/${role}`}
               className={({ isActive }) => clsx(
-                "group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-bold transition",
-                isActive ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-950/30" : "text-blue-50/90 hover:bg-white/10 hover:text-white"
+                "group flex min-h-12 items-center justify-between rounded-2xl border px-4 py-3 text-sm font-bold transition",
+                isActive ? "border-[#C5A059]/45 bg-white/10 text-white shadow-inner shadow-black/10" : "border-transparent text-blue-50/90 hover:border-white/10 hover:bg-white/10 hover:text-white"
               )}
             >
               <span className="flex items-center gap-3">
