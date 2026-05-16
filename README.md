@@ -56,9 +56,8 @@ Container:  Docker Compose
 
 ```text
 1142-nccu-database-systems/
-├── backend/                # Express API, Sequelize models, audit engine
+├── backend/                # Express API, Sequelize models, audit engine, Course Excel files and demo transcript JSON files 
 ├── frontend/               # React + Vite frontend application
-├── data/                   # Course Excel files and demo transcript JSON files
 ├── docs/                   # API docs, backend design, assumptions, performance reports
 ├── performance/            # k6 load testing scripts
 ├── docker-compose.yml      # Local Docker Compose setup: MySQL + backend
