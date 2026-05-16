@@ -195,16 +195,22 @@ function TrendChartCard({
   const points = values.map((item, index) => ({ ...item, x: xOf(index), y: yOf(item.value) }));
   const polyline = points.map((point) => `${point.x},${point.y}`).join(" ");
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white px-5 py-5 shadow-sm shadow-blue-950/5">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <span className="inline-flex items-center gap-2 text-sm font-black text-navy-950">
           <span className="h-3 w-8 rounded-full" style={{ backgroundColor: lineColor }} />
           {title}
         </span>
-        <p className="text-sm font-bold text-slate-500">{meta}</p>
+        <p className="text-[11px] font-bold text-slate-500 sm:text-sm">{meta}</p>
       </div>
-      <div className="overflow-x-auto">
-        <svg className="h-[360px] min-w-[860px] w-full" viewBox={`0 0 ${chart.width} ${chart.height}`} role="img" aria-label={ariaLabel}>
+      <div className="relative w-full overflow-hidden">
+        <svg 
+          className="h-auto w-full" 
+          viewBox={`0 0 ${chart.width} ${chart.height}`} 
+          preserveAspectRatio="xMidYMid meet"
+          role="img" 
+          aria-label={ariaLabel}
+        >
           {[chart.top, (chart.top + chart.bottom) / 2, chart.bottom].map((y) => (
             <line key={y} x1={chart.left} x2={chart.right} y1={y} y2={y} stroke="#e6edf5" strokeWidth="2" />
           ))}
@@ -212,11 +218,11 @@ function TrendChartCard({
           {points.map((point) => (
             <g key={`${title}-${point.label}`}>
               <circle cx={point.x} cy={point.y} fill={markerColor} r="10" />
-              <text fill="#0b1d38" fontSize="19" fontWeight="900" textAnchor="middle" x={point.x} y={point.y < chart.top + 22 ? point.y + 32 : point.y - 18}>{point.display}</text>
-              <text fill="#64748b" fontSize="18" fontWeight="900" textAnchor="middle" x={point.x} y="288">{point.label}</text>
+              <text fill="#0b1d38" fontSize="20" fontWeight="900" textAnchor="middle" x={point.x} y={point.y < chart.top + 22 ? point.y + 36 : point.y - 20}>{point.display}</text>
+              <text fill="#64748b" fontSize="18" fontWeight="900" textAnchor="middle" x={point.x} y="295">{point.label}</text>
             </g>
           ))}
-          <text fill="#94a3b8" fontSize="13" fontWeight="800" x={chart.left} y="32">{valueLabel}</text>
+          <text fill="#94a3b8" fontSize="14" fontWeight="800" x={chart.left} y="32">{valueLabel}</text>
         </svg>
       </div>
     </div>
@@ -341,15 +347,15 @@ function ResultHero({ result, studentProfile }: { result: AuditResult; studentPr
             <StatusIcon className="h-9 w-9" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#C5A059]">Graduation Audit</p>
-            <h2 className="mt-2 truncate font-serif text-2xl font-bold text-navy-950 md:text-3xl">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C5A059] sm:text-xs">Graduation Audit</p>
+            <h2 className="mt-2 font-serif text-xl font-bold leading-tight text-navy-950 sm:text-2xl md:text-3xl">
               {studentName}畢業檢核結果：<span className={statusColor}>{eligible ? "已完成" : "尚未完成"}</span>
             </h2>
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-slate-600">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs font-semibold text-slate-600 sm:text-sm">
               <span className="whitespace-nowrap">目前採計 {formatCredits(result.totalCredits.earned)} / {formatCredits(result.totalCredits.required)} 學分</span>
               <span className="whitespace-nowrap text-[#9f7c31]">尚缺 {formatCredits(result.totalCredits.missing)} 學分</span>
-              <span className="whitespace-nowrap text-xs opacity-70">規則：{result.academicYear} 學年度 / {result.department}</span>
-              <span className="inline-flex items-center gap-1 whitespace-nowrap"><Clock3 className="h-4 w-4" />模式 {result.mode}</span>
+              <span className="whitespace-nowrap opacity-70">規則：{result.academicYear} 學年度</span>
+              <span className="inline-flex items-center gap-1 whitespace-nowrap"><Clock3 className="h-3.5 w-3.5" />模式 {result.mode}</span>
             </div>
           </div>
         </div>
@@ -826,14 +832,14 @@ export function AuditResultView({ result, studentProfile }: { result: AuditResul
         </div>
       ) : null}
       <ResultHero result={active} studentProfile={studentProfile} />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <CategoryProgressCard title="必修課程" group={requiredGroup} earned={Number(requiredGroup?.earnedCredits || 0)} required={Number(requiredGroup?.requiredCredits || active.totalCredits.structure.required)} icon={<BookOpenCheck className="h-6 w-6" />} tone="blue" />
         <CategoryProgressCard title="通識課程" group={generalGroup} earned={Number(generalGroup?.earnedCredits || 0)} required={Number(generalGroup?.requiredCredits || active.totalCredits.structure.generalEducation)} icon={<GraduationCap className="h-6 w-6" />} tone="green" />
         <CategoryProgressCard title="選修課程" group={electiveGroup} earned={Number(electiveGroup?.earnedCredits || 0)} required={Number(electiveGroup?.requiredCredits || active.totalCredits.structure.elective)} icon={<Layers3 className="h-6 w-6" />} tone="purple" />
         <CategoryProgressCard title="畢業總學分" group={totalGroup} earned={Number(active.totalCredits.earned || 0)} required={Number(active.totalCredits.required || 0)} icon={<Trophy className="h-6 w-6" />} tone="gold" />
       </div>
       {studentProfile ? <StudentAcademicProfileCard profile={studentProfile} /> : null}
-      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+      <div className="grid gap-4 xl:grid-cols-2">
         <GraduationProgressPanel result={active} />
         <ActionRequiredPanel result={active} />
       </div>
