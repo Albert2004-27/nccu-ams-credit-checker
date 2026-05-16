@@ -25,7 +25,14 @@ function recordsOf(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => item !== null && typeof item === "object" && !Array.isArray(item)) : [];
 }
 
-function displayGroupName(group: AuditGroup) {
+function displayGroupName(group: AuditGroup, isMobile = false) {
+  if (isMobile) {
+    if (group.groupCode === "REQUIRED") return "必修";
+    if (group.groupCode === "GENERAL") return "通識";
+    if (group.groupCode === "PE") return "體育";
+    if (group.groupCode === "ELECTIVE") return "選修";
+    if (group.groupCode === "TOTAL") return "總結";
+  }
   return group.groupCode === "GENERAL" ? "通識課程" : group.groupName;
 }
 
@@ -855,15 +862,16 @@ export function AuditResultView({ result, studentProfile }: { result: AuditResul
         </div>
       ) : null}
       {tabGroups.length ? (
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
-          <div className="mb-4 flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+        <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm shadow-blue-950/5 sm:p-5">
+          <div className="mb-4 flex flex-nowrap gap-1.5 overflow-x-auto border-b border-slate-200 pb-3 scrollbar-hide">
             {tabGroups.map((group) => (
               <button
-                className={`rounded-xl px-4 py-2 text-sm font-bold transition ${selectedGroup?.groupCode === group.groupCode ? "bg-navy-900 text-white shadow-lg shadow-blue-950/20" : "bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-navy-900"}`}
+                className={`shrink-0 rounded-xl px-3 py-1.5 text-xs font-bold transition sm:px-4 sm:py-2 sm:text-sm ${selectedGroup?.groupCode === group.groupCode ? "bg-navy-900 text-white shadow-lg shadow-blue-950/20" : "bg-slate-50 text-slate-600 hover:bg-blue-50"}`}
                 key={group.groupCode}
                 onClick={() => setSelectedGroupCode(group.groupCode)}
               >
-                {displayGroupName(group)}
+                <span className="hidden sm:inline">{displayGroupName(group)}</span>
+                <span className="sm:hidden">{displayGroupName(group, true)}</span>
               </button>
             ))}
           </div>
