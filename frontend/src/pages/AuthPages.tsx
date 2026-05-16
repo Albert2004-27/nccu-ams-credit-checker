@@ -1,20 +1,23 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowRight, BookOpenCheck, ClipboardCheck, GraduationCap, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowDown, ArrowRight, BookOpenCheck, Lock, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { getDefaultRouteForRole } from "../lib/navigation";
 import { useAppState } from "../state/AppState";
 import type { DemoUser, UserRole } from "../types/api";
 import nccuLogo from "../assets/nccu-logo.png";
+import nccuMainGate from "../assets/nccu-main-gate.jpg";
 
 function AuthFrame({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#eaf1f8] text-slate-900">
-      <section className="relative flex min-h-[64vh] overflow-hidden bg-[#071f3f] px-6 py-8 text-white md:px-12 lg:px-20">
-        <img className="absolute right-[-8rem] top-1/2 h-[36rem] w-[36rem] -translate-y-1/2 object-contain opacity-[0.08] md:right-[-4rem] md:h-[42rem] md:w-[42rem]" src={nccuLogo} alt="" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[#071f3f]/90" />
+      <section className="relative flex min-h-[72vh] overflow-hidden bg-[#071f3f] px-6 py-8 text-white md:px-12 lg:px-20">
+        <div className="absolute inset-0 scale-[1.01] bg-cover bg-center" style={{ backgroundImage: `url(${nccuMainGate})` }} />
+        <div className="absolute inset-0 bg-[#071f3f]/34 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#071f3f]/10 via-[#071f3f]/18 to-[#071f3f]/64" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_46%,rgba(5,20,43,0.62)_0%,rgba(5,20,43,0.42)_30%,rgba(5,20,43,0.12)_56%,transparent_76%),linear-gradient(90deg,rgba(7,31,63,0.26),transparent_30%,transparent_74%,rgba(7,31,63,0.32))]" />
         <div className="absolute inset-x-0 top-0 h-1 bg-[#C5A059]" />
         <div className="relative z-10 flex w-full flex-col">
-          <header className="flex items-center justify-between gap-4">
+          <header className="flex items-center gap-4">
             <div className="flex min-w-0 items-center gap-4">
               <img className="h-14 w-14 shrink-0 rounded-full bg-white object-contain p-1.5 shadow-xl shadow-black/20" src={nccuLogo} alt="NCCU logo" />
               <div>
@@ -25,28 +28,19 @@ function AuthFrame({ title, children }: { title: string; children: React.ReactNo
                 <p className="mt-1 text-sm font-semibold text-blue-100">Department of Mathematical Sciences, NCCU</p>
               </div>
             </div>
-            <a className="hidden rounded-xl border border-white/20 px-4 py-2 text-sm font-black text-white transition hover:bg-white/10 md:inline-flex" href="#auth-panel">
-              Secure Access
-            </a>
           </header>
 
-          <div className="flex flex-1 items-center justify-center py-14 text-center">
-            <div className="w-full max-w-7xl">
-              <p className="mx-auto mb-5 inline-flex rounded-full border border-[#C5A059]/50 bg-[#C5A059]/10 px-7 py-2 text-xs font-black uppercase tracking-[0.28em] text-[#f4d68c]">
+          <div className="flex flex-1 items-center justify-center py-16 text-center">
+            <div className="w-full max-w-5xl">
+              <p className="mx-auto mb-5 inline-flex rounded-full border border-[#C5A059]/55 bg-[#071f3f]/35 px-7 py-2 text-xs font-black uppercase tracking-[0.28em] text-[#f4d68c] shadow-lg shadow-black/15 backdrop-blur-sm">
                 Graduation Audit Platform
               </p>
-              <h1 className="mx-auto whitespace-nowrap font-serif text-[1.35rem] font-bold leading-none tracking-normal sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl">
-                以清楚的規則與結果，完成畢業資格檢核
+              <h1
+                className="mx-auto whitespace-nowrap font-serif text-5xl font-bold leading-none tracking-normal text-white sm:text-6xl md:text-7xl lg:text-8xl"
+                style={{ textShadow: "0 5px 22px rgba(0,0,0,0.72), 0 1px 2px rgba(0,0,0,0.9)" }}
+              >
+                畢業審核系統
               </h1>
-              <p className="mx-auto mt-7 max-w-3xl text-base font-medium leading-8 text-blue-100 md:text-xl">
-                整合 transcript JSON 匯入、畢業審核、修課成績與通識必修解釋，讓學生與行政人員使用同一套可追溯的檢核流程。
-              </p>
-
-              <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-3">
-                <HeroPill icon={<BookOpenCheck className="h-5 w-5" />} label="規則清楚" />
-                <HeroPill icon={<ClipboardCheck className="h-5 w-5" />} label="結果可追溯" />
-                <HeroPill icon={<ShieldCheck className="h-5 w-5" />} label="行政可管理" />
-              </div>
 
               <a className="mx-auto mt-10 inline-flex items-center gap-2 rounded-xl bg-[#C5A059] px-7 py-3 text-sm font-black text-navy-950 shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-[#d7b670]" href="#auth-panel">
                 前往登入
@@ -59,13 +53,18 @@ function AuthFrame({ title, children }: { title: string; children: React.ReactNo
 
       <main className="flex min-h-screen items-center justify-center px-5 py-12" id="auth-panel">
         <div className="w-full max-w-[540px]">
-          <div className="mb-6 flex items-center justify-center gap-4">
+          <a
+            className="group mb-6 flex items-center justify-center gap-4 rounded-3xl px-4 py-3 transition hover:bg-white/55 focus:outline-none focus:ring-4 focus:ring-[#C5A059]/25"
+            href="https://ms.nccu.edu.tw/"
+            rel="noreferrer"
+            target="_blank"
+          >
             <img className="h-14 w-14 shrink-0 rounded-full border border-slate-200 bg-white object-contain p-1.5 shadow-lg shadow-blue-950/10" src={nccuLogo} alt="NCCU logo" />
             <div>
-              <p className="font-serif text-xl font-bold text-navy-950">Mathematical Sciences</p>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Graduate Audit</p>
+              <p className="font-serif text-xl font-bold text-navy-950 transition group-hover:text-[#082f63]">Mathematical Sciences</p>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 transition group-hover:text-[#9f7c31]">Graduate Audit</p>
             </div>
-          </div>
+          </a>
           <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-2xl shadow-blue-950/10 md:p-10">
             <div className="mb-7">
               <p className="text-xs font-black uppercase tracking-[0.22em] text-[#C5A059]">Secure Access</p>
@@ -75,15 +74,6 @@ function AuthFrame({ title, children }: { title: string; children: React.ReactNo
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-function HeroPill({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-3 py-3 text-sm font-bold text-blue-50 backdrop-blur">
-      <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/10 text-[#f4d68c]">{icon}</span>
-      <span className="whitespace-nowrap">{label}</span>
     </div>
   );
 }

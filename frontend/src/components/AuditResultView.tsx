@@ -1,4 +1,4 @@
-import { AlertTriangle, BookOpenCheck, CheckCircle2, ChevronDown, Clock3, FileWarning, GraduationCap, Layers3, Medal, Trophy } from "lucide-react";
+import { AlertTriangle, BarChart3, BookOpenCheck, CheckCircle2, ChevronDown, Clock3, FileWarning, GraduationCap, Layers3, Medal, Trophy } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { formatCredits } from "../lib/status";
 import type { StudentAcademicProfile } from "../lib/transcriptProfile";
@@ -44,6 +44,31 @@ function displayCoreCourse(course: Record<string, unknown>) {
   return `${bucketName}：${courseName}`;
 }
 
+function completedPhysicalEducationRows(group: AuditGroup) {
+  if (group.groupCode !== "PE") return [];
+  const rawRows = [
+    ...recordsOf(group.completedCourses),
+    ...recordsOf(group.courses),
+    ...recordsOf(group.completedRules)
+  ];
+  const seen = new Set<string>();
+  return rawRows.reduce<Array<Record<string, unknown>>>((rows, row) => {
+    const courseCode = row.courseCode || row.matchedCourseCode || row.course_code;
+    const courseName = row.courseName || row.course_name || row.name;
+    const credits = row.credits || row.countedCredits || row.credit;
+    const key = `${String(courseCode || "")}-${String(courseName || "")}`;
+    if (!courseCode && !courseName) return rows;
+    if (seen.has(key)) return rows;
+    seen.add(key);
+    rows.push({
+      課號: courseCode || "—",
+      課程: courseName || "—",
+      學分: credits || "—"
+    });
+    return rows;
+  }, []);
+}
+
 function groupByCode(result: AuditResult, groupCode: string) {
   return result.groups.find((group) => group.groupCode === groupCode);
 }
@@ -76,11 +101,11 @@ function statusText(isComplete: boolean) {
   return isComplete ? "完成" : "未完成";
 }
 
-function StudentProfileItem({ label, value, emphasis = false }: { label: string; value?: string; emphasis?: boolean }) {
+function StudentProfileItem({ label, value }: { label: string; value?: string; emphasis?: boolean }) {
   return (
     <div className="rounded-2xl border border-white/80 bg-white/90 p-4 shadow-sm shadow-blue-950/5">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">{label}</p>
-      <p className={`mt-2 font-bold ${emphasis ? "text-2xl text-navy-950" : "text-base text-navy-900"}`}>{value || "JSON 未提供"}</p>
+      <p className="mt-2 text-base font-bold text-navy-900">{value || "JSON 未提供"}</p>
     </div>
   );
 }
@@ -98,11 +123,171 @@ function formatClassRanking(profile: StudentAcademicProfile) {
   return formatRankValue(profile.classRanking, profile.classRankingPercent);
 }
 
-function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfile }) {
-  const rankPills = [
+function profileRankPills(profile: StudentAcademicProfile) {
+  if (profile.rankings?.length) {
+    return profile.rankings.map((ranking) => ({
+      label: ranking.label,
+      value: formatRankValue(ranking.value, ranking.percent) || ranking.value
+    })).filter((item): item is { label: string; value: string } => Boolean(item.value));
+  }
+  return [
     { label: "系排名", value: formatDepartmentRanking(profile) },
     { label: "班排名", value: formatClassRanking(profile) }
   ].filter((item): item is { label: string; value: string } => Boolean(item.value));
+}
+
+function semesterDisplayLabel(summary: NonNullable<StudentAcademicProfile["semesterSummaries"]>[number]) {
+  return `${summary.academicYear}-${summary.semester}`;
+}
+
+function numericText(value?: string | number | null) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function rankingParts(value?: string) {
+  if (!value) return null;
+  const match = value.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const rank = Number(match[1]);
+  const total = Number(match[2]);
+  if (!Number.isFinite(rank) || !Number.isFinite(total) || total <= 0) return null;
+  return { rank, total };
+}
+
+function rankingPerformance(value?: string) {
+  const parts = rankingParts(value);
+  if (!parts) return null;
+  return ((parts.total - parts.rank + 1) / parts.total) * 100;
+}
+
+function scaleSeries(values: number[], top = 58, bottom = 184) {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  return (value: number) => bottom - ((value - min) / range) * (bottom - top);
+}
+
+function TrendChartCard({
+  title,
+  meta,
+  ariaLabel,
+  values,
+  valueLabel,
+  lineColor,
+  markerColor,
+  dashed = false
+}: {
+  title: string;
+  meta: string;
+  ariaLabel: string;
+  values: Array<{ label: string; value: number; display: string }>;
+  valueLabel: string;
+  lineColor: string;
+  markerColor: string;
+  dashed?: boolean;
+}) {
+  if (values.length < 2) return <p className="text-sm font-semibold text-slate-500">{title}至少需要兩個學期才會顯示折線趨勢。</p>;
+  const chart = { width: 920, height: 320, left: 76, right: 844, top: 72, bottom: 232 };
+  const yOf = scaleSeries(values.map((item) => item.value), chart.top, chart.bottom);
+  const xOf = (index: number) => chart.left + (index * (chart.right - chart.left)) / (values.length - 1);
+  const points = values.map((item, index) => ({ ...item, x: xOf(index), y: yOf(item.value) }));
+  const polyline = points.map((point) => `${point.x},${point.y}`).join(" ");
+  return (
+    <div className="rounded-3xl border border-slate-100 bg-white px-5 py-5 shadow-sm shadow-blue-950/5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-2 text-sm font-black text-navy-950">
+          <span className="h-3 w-8 rounded-full" style={{ backgroundColor: lineColor }} />
+          {title}
+        </span>
+        <p className="text-sm font-bold text-slate-500">{meta}</p>
+      </div>
+      <div className="overflow-x-auto">
+        <svg className="h-[360px] min-w-[860px] w-full" viewBox={`0 0 ${chart.width} ${chart.height}`} role="img" aria-label={ariaLabel}>
+          {[chart.top, (chart.top + chart.bottom) / 2, chart.bottom].map((y) => (
+            <line key={y} x1={chart.left} x2={chart.right} y1={y} y2={y} stroke="#e6edf5" strokeWidth="2" />
+          ))}
+          <polyline fill="none" points={polyline} stroke={lineColor} strokeLinecap="round" strokeLinejoin="round" strokeWidth="8" strokeDasharray={dashed ? "12 10" : undefined} />
+          {points.map((point) => (
+            <g key={`${title}-${point.label}`}>
+              <circle cx={point.x} cy={point.y} fill={markerColor} r="10" />
+              <text fill="#0b1d38" fontSize="19" fontWeight="900" textAnchor="middle" x={point.x} y={point.y < chart.top + 22 ? point.y + 32 : point.y - 18}>{point.display}</text>
+              <text fill="#64748b" fontSize="18" fontWeight="900" textAnchor="middle" x={point.x} y="288">{point.label}</text>
+            </g>
+          ))}
+          <text fill="#94a3b8" fontSize="13" fontWeight="800" x={chart.left} y="32">{valueLabel}</text>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function SemesterTrendPanel({ profile }: { profile: StudentAcademicProfile }) {
+  const [expanded, setExpanded] = useState(true);
+  const summaries = profile.semesterSummaries || [];
+  const data = summaries
+    .map((summary) => ({
+      summary,
+      score: numericText(summary.averageScore),
+      rankPerformance: rankingPerformance(summary.departmentRanking || summary.classRanking)
+    }))
+    .filter((item): item is { summary: NonNullable<StudentAcademicProfile["semesterSummaries"]>[number]; score: number; rankPerformance: number | null } => item.score !== null)
+    .sort((a, b) => Number(a.summary.academicYearSemester) - Number(b.summary.academicYearSemester));
+  if (!summaries.length) return null;
+
+  const scoreValues = data.map((item) => item.score);
+  const rankValues = data.map((item) => item.rankPerformance).filter((value): value is number => value !== null);
+  const scoreMin = scoreValues.length ? Math.min(...scoreValues) : 0;
+  const scoreMax = scoreValues.length ? Math.max(...scoreValues) : 0;
+  const rankData = data
+    .filter((item): item is typeof item & { rankPerformance: number } => item.rankPerformance !== null)
+    .map((item) => ({
+      label: semesterDisplayLabel(item.summary),
+      value: item.rankPerformance,
+      display: item.summary.departmentRanking || item.summary.classRanking || item.rankPerformance.toFixed(1)
+    }));
+  const scoreData = data.map((item) => ({ label: semesterDisplayLabel(item.summary), value: item.score, display: item.score.toFixed(1) }));
+  
+  const firstRank = rankData[0];
+  const lastRank = rankData[rankData.length - 1];
+  const improvement = rankData.length >= 2 ? lastRank.value - firstRank.value : 0;
+  const rankTrendText = rankData.length >= 2
+    ? `從 ${firstRank.display} 進步到 ${lastRank.display}，表現躍升 ${improvement.toFixed(1)}%`
+    : "排名資料不足";
+
+  return (
+    <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+      <button
+        className="flex w-full items-center justify-between gap-3 text-left"
+        onClick={() => setExpanded((value) => !value)}
+        type="button"
+      >
+        <span className="inline-flex items-center gap-2 text-sm font-black text-navy-900">
+          <BarChart3 className="h-4 w-4 text-navy-700" />
+          成績與排名趨勢
+        </span>
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-500">
+          {expanded ? "收合" : "查看折線圖"}
+          <ChevronDown className={`h-4 w-4 transition ${expanded ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+      {expanded ? (
+        data.length >= 2 ? (
+          <div className="mt-4 grid gap-4">
+            <TrendChartCard title="平均成績趨勢" meta={`最低 ${scoreMin.toFixed(2)} / 最高 ${scoreMax.toFixed(2)}`} ariaLabel="平均成績折線圖" values={scoreData} valueLabel="Average Score" lineColor="#0a3a75" markerColor="#C5A059" />
+            <TrendChartCard title="排名表現趨勢" meta={rankTrendText} ariaLabel="排名表現折線圖" values={rankData} valueLabel="Ranking Performance" lineColor="#C5A059" markerColor="#0a3a75" dashed />
+          </div>
+        ) : (
+          <p className="mt-3 text-sm font-semibold text-slate-500">至少需要兩個學期才會顯示折線趨勢。</p>
+        )
+      ) : null}
+    </div>
+  );
+}
+
+function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfile }) {
+  const rankPills = profileRankPills(profile);
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">
@@ -131,12 +316,13 @@ function StudentAcademicProfileCard({ profile }: { profile: StudentAcademicProfi
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <StudentProfileItem label="主修" value={profile.major} emphasis />
+        <StudentProfileItem label="主修" value={profile.major} />
         <StudentProfileItem label="雙主修" value={profile.doubleMajor} />
         <StudentProfileItem label="輔修" value={profile.minor} />
         <StudentProfileItem label="平均成績" value={profile.averageScore} />
         <StudentProfileItem label="GPA" value={profile.cumulativeGpa} />
       </div>
+      <SemesterTrendPanel profile={profile} />
     </section>
   );
 }
@@ -484,9 +670,57 @@ function CompactRows({ rows, keys }: { rows: Array<Record<string, unknown>>; key
   );
 }
 
-function GroupPanel({ group }: { group: AuditGroup }) {
+function groupTone(groupCode: string): "blue" | "green" | "purple" | "gold" {
+  if (groupCode === "TOTAL") return "gold";
+  if (groupCode === "GENERAL") return "green";
+  if (groupCode === "ELECTIVE") return "purple";
+  return "blue";
+}
+
+function GroupBreakdownCard({ group }: { group: AuditGroup }) {
+  const earned = Number(group.earnedCredits || 0);
+  const required = Number(group.requiredCredits || 0);
+  const progress = percentOf(earned, required);
+  const isComplete = group.status === "COMPLETE";
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-bold text-navy-950">{displayGroupName(group)}</p>
+          <p className="mt-1 text-sm font-semibold text-slate-500">
+            {formatCredits(earned)} / {formatCredits(required)} 學分
+            {group.missingCredits > 0 ? `，尚缺 ${formatCredits(group.missingCredits)} 學分` : ""}
+          </p>
+        </div>
+        <StatusBadge value={isComplete ? "完成" : "未完成"} />
+      </div>
+      <div className="mt-4">
+        <ThinProgressBar percent={progress} tone={groupTone(group.groupCode)} />
+        <p className="mt-1 text-right text-xs font-black text-navy-800">{displayPercent(progress)}</p>
+      </div>
+    </div>
+  );
+}
+
+function TotalGroupBreakdown({ groups }: { groups: AuditGroup[] }) {
+  const orderedGroups = ["REQUIRED", "PE", "GENERAL", "ELECTIVE"]
+    .map((code) => groups.find((group) => group.groupCode === code))
+    .filter((group): group is AuditGroup => Boolean(group));
+  if (!orderedGroups.length) return null;
+  return (
+    <div className="mt-4">
+      <p className="mb-3 text-sm font-semibold text-slate-600">總畢業學分由以下四個規則群組共同組成：</p>
+      <div className="grid gap-3 md:grid-cols-2">
+        {orderedGroups.map((item) => <GroupBreakdownCard group={item} key={item.groupCode} />)}
+      </div>
+    </div>
+  );
+}
+
+function GroupPanel({ group, allGroups }: { group: AuditGroup; allGroups: AuditGroup[] }) {
   const coreCourses = recordsOf(group.coreRequirement?.courses);
   const earnedDomains = Array.isArray(group.coreRequirement?.earnedDomains) ? group.coreRequirement.earnedDomains : [];
+  const peCompletedRows = completedPhysicalEducationRows(group);
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -500,17 +734,23 @@ function GroupPanel({ group }: { group: AuditGroup }) {
         </div>
         <StatusBadge value={group.status} />
       </div>
-      <CreditProgressBar value={Number(group.earnedCredits || 0)} max={Number(group.requiredCredits || 1)} />
+      {group.groupCode === "TOTAL" ? <TotalGroupBreakdown groups={allGroups} /> : <CreditProgressBar value={Number(group.earnedCredits || 0)} max={Number(group.requiredCredits || 1)} />}
       {group.missingCourses?.length ? (
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold text-red-700">缺少項目</p>
           <CompactRows rows={group.missingCourses} keys={["courseName", "requiredCredits", "acceptedCourseCodes"]} />
         </div>
       ) : null}
-      {group.completedRules?.length ? (
+      {group.completedRules?.length && group.groupCode !== "PE" ? (
         <div className="mt-4">
           <p className="mb-2 text-sm font-semibold text-slate-700">已完成規則</p>
           <CompactRows rows={group.completedRules} keys={["courseName", "matchedCourseCode", "countedCredits", "recognitionType"]} />
+        </div>
+      ) : null}
+      {peCompletedRows.length ? (
+        <div className="mt-4">
+          <p className="mb-2 text-sm font-semibold text-navy-800">已完成體育課程</p>
+          <CompactRows rows={peCompletedRows} keys={["課號", "課程", "學分"]} />
         </div>
       ) : null}
       {group.requirements?.length ? (
@@ -621,7 +861,7 @@ export function AuditResultView({ result, studentProfile }: { result: AuditResul
               </button>
             ))}
           </div>
-          {selectedGroup ? <GroupPanel group={selectedGroup} /> : null}
+          {selectedGroup ? <GroupPanel group={selectedGroup} allGroups={active.groups} /> : null}
         </section>
       ) : null}
     </div>

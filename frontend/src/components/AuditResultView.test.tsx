@@ -112,7 +112,11 @@ describe("AuditResultView", () => {
           classRanking: "5 / 75",
           classRankingPercent: "6.67 %",
           averageScore: "94.55",
-          cumulativeGpa: "4.21"
+          cumulativeGpa: "4.21",
+          semesterSummaries: [
+            { academicYear: "111", semester: "1", academicYearSemester: "1111", averageScore: "86.65", gpa: "3.92", departmentRanking: "25 / 54", classRanking: "25 / 54" },
+            { academicYear: "111", semester: "2", academicYearSemester: "1112", averageScore: "89.23", gpa: "4.12", departmentRanking: "19 / 54", classRanking: "19 / 54" }
+          ]
         }}
       />
     );
@@ -127,6 +131,12 @@ describe("AuditResultView", () => {
     expect(screen.getAllByText("94.55").length).toBeGreaterThan(0);
     expect(screen.getAllByText("GPA").length).toBeGreaterThan(0);
     expect(screen.getAllByText("4.21").length).toBeGreaterThan(0);
+    expect(screen.getByText("成績與排名趨勢")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /成績與排名趨勢/ }));
+
+    expect(screen.getByLabelText("平均成績折線圖")).toBeInTheDocument();
+    expect(screen.getByText("排名表現趨勢")).toBeInTheDocument();
   });
 
   it("keeps action required compact until the user expands missing courses", () => {
