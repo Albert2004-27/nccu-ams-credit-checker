@@ -84,16 +84,22 @@ function TrendChartCard({ title, meta, ariaLabel, values, valueLabel, lineColor,
   const polyline = points.map((point) => `${point.x},${point.y}`).join(" ");
 
   return (
-    <div className="rounded-3xl border border-slate-100 bg-white px-5 py-5 shadow-sm shadow-blue-950/5">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="rounded-3xl border border-slate-100 bg-white px-4 py-4 shadow-sm shadow-blue-950/5">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <span className="inline-flex items-center gap-2 text-sm font-black text-navy-950">
           <span className="h-3 w-8 rounded-full" style={{ backgroundColor: lineColor }} />
           {title}
         </span>
-        <p className="text-sm font-bold text-slate-500">{meta}</p>
+        <p className="text-[11px] font-bold text-slate-500 sm:text-sm">{meta}</p>
       </div>
-      <div className="overflow-x-auto">
-        <svg className="h-[360px] min-w-[860px] w-full" viewBox={`0 0 ${chart.width} ${chart.height}`} role="img" aria-label={ariaLabel}>
+      <div className="relative w-full overflow-hidden">
+        <svg 
+          className="h-auto w-full" 
+          viewBox={`0 0 ${chart.width} ${chart.height}`} 
+          preserveAspectRatio="xMidYMid meet"
+          role="img" 
+          aria-label={ariaLabel}
+        >
           {[chart.top, (chart.top + chart.bottom) / 2, chart.bottom].map((y) => (
             <line key={y} x1={chart.left} x2={chart.right} y1={y} y2={y} stroke="#e6edf5" strokeWidth="2" />
           ))}
@@ -101,11 +107,11 @@ function TrendChartCard({ title, meta, ariaLabel, values, valueLabel, lineColor,
           {points.map((point) => (
             <g key={`${title}-${point.label}`}>
               <circle cx={point.x} cy={point.y} fill={markerColor} r="10" />
-              <text fill="#0b1d38" fontSize="19" fontWeight="900" textAnchor="middle" x={point.x} y={point.y < chart.top + 22 ? point.y + 32 : point.y - 18}>{point.display}</text>
-              <text fill="#64748b" fontSize="18" fontWeight="900" textAnchor="middle" x={point.x} y="288">{point.label}</text>
+              <text fill="#0b1d38" fontSize="20" fontWeight="900" textAnchor="middle" x={point.x} y={point.y < chart.top + 22 ? point.y + 36 : point.y - 20}>{point.display}</text>
+              <text fill="#64748b" fontSize="18" fontWeight="900" textAnchor="middle" x={point.x} y="295">{point.label}</text>
             </g>
           ))}
-          <text fill="#94a3b8" fontSize="13" fontWeight="800" x={chart.left} y="32">{valueLabel}</text>
+          <text fill="#94a3b8" fontSize="14" fontWeight="800" x={chart.left} y="32">{valueLabel}</text>
         </svg>
       </div>
     </div>
@@ -150,6 +156,7 @@ function SemesterTrendChart({ summaries }: { summaries: SemesterAcademicSummary[
   const max = Math.max(...scores);
   const min = Math.min(...scores);
   const scoreData = data.map((item) => ({ label: semesterLabel(item.summary), value: item.score, display: item.score.toFixed(1) }));
+  
   const rankData = data
     .filter((item): item is typeof item & { rankPerformance: number } => item.rankPerformance !== null)
     .map((item) => ({
@@ -157,8 +164,12 @@ function SemesterTrendChart({ summaries }: { summaries: SemesterAcademicSummary[
       value: item.rankPerformance,
       display: item.summary.departmentRanking || item.summary.classRanking || item.rankPerformance.toFixed(1)
     }));
+
+  const firstRank = rankData[0];
+  const lastRank = rankData[rankData.length - 1];
+  const improvement = rankData.length >= 2 ? lastRank.value - firstRank.value : 0;
   const rankTrendText = rankData.length >= 2
-    ? `排名表現 ${rankData[0].value.toFixed(1)} → ${rankData[rankData.length - 1].value.toFixed(1)}`
+    ? `從 ${firstRank.display} 進步到 ${lastRank.display}，表現躍升 ${improvement.toFixed(1)}%`
     : "排名資料不足";
 
   return (
@@ -188,7 +199,7 @@ function InfoTip({ label, text }: { label: string; text: string }) {
 }
 
 function SemesterSummaryStrip({ summaries }: { summaries?: SemesterAcademicSummary[] }) {
-  const [showChart, setShowChart] = useState(false);
+  const [showChart, setShowChart] = useState(true);
   if (!summaries?.length) return null;
   return (
     <section className="mb-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm shadow-blue-950/5">

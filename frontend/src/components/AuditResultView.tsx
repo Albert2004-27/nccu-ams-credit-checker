@@ -666,19 +666,25 @@ function ActionRequiredPanel({ result }: { result: AuditResult }) {
 function CompactRows({ rows, keys }: { rows: Array<Record<string, unknown>>; keys: string[] }) {
   if (!rows.length) return <p className="text-sm text-slate-500">無資料</p>;
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
-          <tr>{keys.map((key) => <th className="px-3 py-2" key={key}>{key}</th>)}</tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 bg-white">
-          {rows.slice(0, 8).map((row, index) => (
-            <tr key={index}>
-              {keys.map((key) => <td className="px-3 py-2 text-slate-700" key={key}>{valueOf(row, key)}</td>)}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+            <tr>{keys.map((key) => <th className="whitespace-nowrap px-3 py-2" key={key}>{key}</th>)}</tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {rows.slice(0, 10).map((row, index) => (
+              <tr key={index}>
+                {keys.map((key) => (
+                  <td className="whitespace-nowrap px-3 py-2 text-slate-700" key={key}>
+                    {valueOf(row, key)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
