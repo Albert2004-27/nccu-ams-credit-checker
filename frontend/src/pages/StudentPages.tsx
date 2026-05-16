@@ -168,9 +168,18 @@ function SemesterTrendChart({ summaries }: { summaries: SemesterAcademicSummary[
   const firstRank = rankData[0];
   const lastRank = rankData[rankData.length - 1];
   const improvement = rankData.length >= 2 ? lastRank.value - firstRank.value : 0;
-  const rankTrendText = rankData.length >= 2
-    ? `從 ${firstRank.display} 進步到 ${lastRank.display}，表現躍升 ${improvement.toFixed(1)}%`
-    : "排名資料不足";
+  
+  let rankTrendText = "排名資料不足";
+  if (rankData.length >= 2) {
+    const absDiff = Math.abs(improvement).toFixed(1);
+    if (improvement > 0) {
+      rankTrendText = `從 ${firstRank.display} 進步到 ${lastRank.display}，表現躍升 ${absDiff}%`;
+    } else if (improvement < 0) {
+      rankTrendText = `從 ${firstRank.display} 下滑到 ${lastRank.display}，表現下降 ${absDiff}%`;
+    } else {
+      rankTrendText = `排名穩定維持在 ${lastRank.display}`;
+    }
+  }
 
   return (
     <div className="grid gap-4">
