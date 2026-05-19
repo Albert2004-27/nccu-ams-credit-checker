@@ -51,8 +51,7 @@ function NavLinks({ links, role, onClick }: { links: any[], role: string, onClic
 
 export function AppShell({ role }: { role: "student" | "admin" }) {
   const links = role === "student" ? studentLinks : adminLinks;
-  const { currentUser, targetUserId, setRole, studentProfile } = useAppState();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { currentUser, targetUserId, logout: appLogout, studentProfile } = useAppState();
   const health = useHealth();
   const navigate = useNavigate();
   const studentName = studentProfile?.studentName || currentUser.name;
@@ -60,7 +59,7 @@ export function AppShell({ role }: { role: "student" | "admin" }) {
   const avatarLabel = studentName.slice(0, 1) || (role === "admin" ? "管" : "學");
 
   function logout() {
-    setRole(null);
+    appLogout();
     navigate("/login");
   }
 
