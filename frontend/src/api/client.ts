@@ -9,18 +9,6 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem("nccu-token");
-}
-
-export function setToken(token: string): void {
-  localStorage.setItem("nccu-token", token);
-}
-
-export function clearToken(): void {
-  localStorage.removeItem("nccu-token");
-}
-
 type RequestOptions = {
   method?: string;
   body?: unknown;
@@ -34,13 +22,11 @@ export function buildApiUrl(path: string, baseUrl = API_BASE_URL) {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const token = getToken();
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
   const response = await fetch(buildApiUrl(path), {
     method: options.method || "GET",
-    headers,
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
     signal: options.signal
   });
