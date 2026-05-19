@@ -49,6 +49,9 @@ export type StudentCourse = {
   user_id: number;
   course_code: string;
   course_name: string;
+  course_english_name?: string | null;
+  english_name?: string | null;
+  courseNameEnglish?: string | null;
   credits: string | number;
   department: string | null;
   course_category: string | null;

@@ -56,13 +56,17 @@ Container:  Docker Compose
 
 ```text
 1142-nccu-database-systems/
-├── backend/                # Express API, Sequelize models, audit engine
+├── backend/                # Express API, Sequelize models, and audit engine
+│   ├── src/                # Backend source code
+│   ├── data/               # Course Excel files, required-course rules, and demo transcript JSON
+│   ├── Dockerfile          # Backend Docker / Railway deployment setup
+│   └── package.json
 ├── frontend/               # React + Vite frontend application
-├── data/                   # Course Excel files and demo transcript JSON files
-├── docs/                   # API docs, backend design, assumptions, performance reports
+├── docs/                   # API docs, backend design, assumptions, and performance reports
 ├── performance/            # k6 load testing scripts
 ├── docker-compose.yml      # Local Docker Compose setup: MySQL + backend
-├── requirement.txt         # System requirements and functional requirements
+├── .env.example            # Example environment variables for local Docker Compose
+├── requirement.txt         # System and functional requirements
 └── README.md
 ```
 
@@ -585,11 +589,15 @@ Container：Docker Compose
 ```text
 1142-nccu-database-systems/
 ├── backend/                # Express API、Sequelize models、audit engine
+│   ├── src/                # 後端程式碼
+│   ├── data/               # 課程 Excel、必修規則 Excel、demo transcript JSON
+│   ├── Dockerfile          # 後端 Docker / Railway 部署設定
+│   └── package.json
 ├── frontend/               # React + Vite 前端
-├── data/                   # 課程 Excel、demo transcript JSON
 ├── docs/                   # API、後端設計、假設、效能報告
 ├── performance/            # k6 壓測腳本
 ├── docker-compose.yml      # 本機 Docker Compose：MySQL + backend
+├── .env.example            # 本機環境變數範例
 ├── requirement.txt         # 系統需求與功能需求清單
 └── README.md
 ```

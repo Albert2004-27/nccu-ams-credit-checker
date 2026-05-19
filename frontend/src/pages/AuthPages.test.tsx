@@ -20,5 +20,6 @@ describe("LoginPage", () => {
 
     expect(screen.getByText("Mathematical Sciences")).toBeInTheDocument();
     expect(screen.queryByText("Applied Mathematics")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Mathematical Sciences/ })).toHaveAttribute("href", "https://ms.nccu.edu.tw/");
   });
 });
